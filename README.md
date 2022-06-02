@@ -2,39 +2,40 @@
 
 ## Index
 
-1. Designing Data intensive applications
-   1. Foundation of Data systems
-       - Key characteristics of Systems.
-           - Reliability
-           - Scalability
-           - Maintainability
-       - Data model and query languages
-       - Serialization and Deserialization
-       - Storage and Retrieval
-         - Hash Indexes
-         - SSTable and LSM tree
-         - B Tree
-   2. Distributed Data
-      - Replication
-        - Leaders and followers
-        - Multi-leader
-        - Leaderless
-      - Partitioning
-        - By key range
-        - By Hash of key
-      - Transactions
-        - ACID
-        - BASE
-      - Consistency
-        - Linerizability
-      - Distributed transactions
-        - 2 PC
-        - 3 PC
-      - Consensus
-        - Paxos
-        - Raft
+1. [Foundation of Data systems](#foundation-of-data-systems)
+       
+   - [Key characteristics of Systems](#key-characteristics-of-systems)
+     - [Reliability](#reliability)
+     - [Scalability](#scalability)
+     - [Maintainability](#maintainability)
+   - [Data model and query languages](#data-model-and-query-languages)
+   - [Serialization and Deserialization](#serialization-and-deserialization)
+   - [Storage and Retrieval](#storage-and-retrieval)
+     - [Hash Indexes](#hash-indexes)
+     - [SSTable and LSM tree](#sstable-and-lsm-tree)
+     - [B Tree](#b-tree)
 
-2. Other Building blocks of System Design
+2. Distributed Data Concepts
+   - Replication
+     - Leaders and followers
+     - Multi-leader
+     - Leaderless
+   - Partitioning
+     - By key range
+     - By Hash of key
+   - Transactions
+     - ACID
+     - BASE
+   - Consistency
+     - Linerizability
+   - Distributed transactions
+     - 2 PC
+     - 3 PC
+   - Consensus
+     - Paxos
+     - Raft
+
+3. Other Building blocks of System Design
    - Front end
    - Load Balancers
    - Reverse proxy
@@ -53,19 +54,19 @@
      - Server Sent Events
    - Logging, metrics and automation
    
-3. Important theorems/ short forms
+4. Important theorems/ short forms
      - CAP Theorem
      - Cube theorem
      - ACID and BASE
      
-4. How to approach System Design
+5. How to approach System Design
 
-5. Memoize these topics!
+6. Memoize these topics!
    - Power of Two
    - Latency numbers every programmer should know
    - Availability numbers
 
-6. How does famous Systems work?
+7. How does famous Systems work?
     - Cassandra
     - Memcached, Redis or Ignite
     - Kafka
@@ -78,7 +79,7 @@
     - Consensus like Paxos or Raft
     - Zookeeper
 
-7. System Design questions with solutions
+8. System Design questions with solutions
    - API Rate limiter
    - Consistent Hashing
    - Key value store
@@ -98,3 +99,19 @@
    - Proximity server system like Yelp or Nearby friends 
    - Ride sharing service like Uber, Lyft, Ola, Didi etc
    - Online ticketing system like TicketMaster or BookMyShow
+   
+## Foundation of Data systems
+
+### Key characteristics of Systems.
+#### Reliability
+#### Scalability
+#### Maintainability
+
+### Data model and query languages
+
+### Serialization and Deserialization
+
+### Storage and Retrieval
+#### Hash Indexes
+#### SSTable and LSM tree
+#### B Tree
