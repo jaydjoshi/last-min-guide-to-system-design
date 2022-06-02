@@ -15,25 +15,26 @@
      - [SSTable and LSM tree](#sstable-and-lsm-tree)
      - [B Tree](#b-tree)
 
-2. Distributed Data Concepts
-   - Replication
-     - Leaders and followers
-     - Multi-leader
-     - Leaderless
-   - Partitioning
-     - By key range
-     - By Hash of key
-   - Transactions
-     - ACID
-     - BASE
-   - Consistency
-     - Linerizability
-   - Distributed transactions
-     - 2 PC
-     - 3 PC
-   - Consensus
-     - Paxos
-     - Raft
+2. [Distributed Data Concepts](#distributed-data-concepts)
+   - [Replication](#replication)
+     - [Leaders and followers](#leaders-and-followers)
+     - [Multi-leader](#multi-leader)
+     - [Leaderless](#leaderless)
+   - [Partitioning](#partitioning)
+     - [By key range](#by-key-range)
+     - [By Hash of key](#by-hash-of-key)
+   - [Transactions](#transactions)
+     - [ACID](#acid)
+     - [BASE](#base)
+   - [Consistency](#consistency)
+     - [Linerizability](#linerizability)
+   - [Distributed transactions](#distributed-transactions)
+     - [2 PC](#two-phase-commit)
+     - [3 PC](#three-phase-commit)
+     - [SAGA](#saga)
+   - [Consensus](#consensus)
+     - [Paxos](#paxos)
+     - [Raft](#raft)
 
 3. Other Building blocks of System Design
    - Front end
@@ -115,3 +116,29 @@
 #### Hash Indexes
 #### SSTable and LSM tree
 #### B Tree
+
+## Distributed Data Concepts
+### Replication
+#### Leaders and followers
+#### Multi-leader
+#### Leaderless
+
+### Partitioning
+#### By key range
+#### By Hash of key
+
+### Transactions
+#### ACID
+#### BASE
+
+### Consistency
+#### Linerizability
+
+### Distributed transactions
+#### Two phase commit
+#### Three phase commit
+#### SAGA
+
+### Consensus
+#### Paxos
+#### Raft
