@@ -1,6 +1,7 @@
 # Last minute guide to System Design
 
 ##Index
+
 1. Designing Data intensive applications
    1. Foundation of Data systems
        - Key characteristics of Systems.
