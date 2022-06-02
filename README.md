@@ -1,6 +1,6 @@
 # Last minute guide to System Design
 
-##Index
+## Index
 
 1. Designing Data intensive applications
    1. Foundation of Data systems
