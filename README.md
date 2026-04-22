@@ -209,12 +209,495 @@ Making future changes or feature enhancements easy
 
 ### Data model and query languages
 
+#### SQL (Relational Databases)
+- Strongly typed, schema-first design 
+- Enforces data integrity via constraints 
+- Normalization reduces redundancy 
+- Relationships handled via joins
+
+Implication:
+- Excellent for systems of record 
+- Harder to evolve schema at scale without coordination
+
+Guarantee : ACID Guarantees
+
+Scaling :
+Primarily vertical scaling, horizontal scaliang needs partitioning and replication
+
+#### NoSQL (Non-Relational Databases)
+Schema-flexible or schema-on-read 
+Data modeled around access patterns 
+Denormalization is common
+
+Implication:
+
+- Faster iteration and evolution 
+- Risk of data inconsistency without discipline
+
+Guarantee : BASE Model
+
+Scaling :
+Primarily horizontal scaling, native support for
+- Sharding
+- Distributed clusters
+- Geo distribution
+
+##### Document Stores
+Example: MongoDB, rethink db, couch db, Espresso ( linkedIn)
+- JSON-like documents
+- Best for hierarchical, evolving data
+- Good for one to many relationship
+- MongoDb uses Map Reduce to perform read only queries across documents
+
+Use Case:
+- Product catalogs
+- User profiles
+- Content systems
+
+##### Key-Value Stores
+Example: Redis, DynamoDB
+- O(1) lookup
+
+Use Case:
+- Caching layer
+- Session stores
+- Rate limiting
+
+##### Wide-Column Stores
+Example: Cassandra, HBase
+- Column-family storage
+- Optimized for write-heavy workloads
+
+Use Case:
+- Time-series data
+- Logging
+- Analytics pipelines
+
+##### Graph Databases
+Example: Neo4j
+- Relationship-first modeling
+- Good for many to many relationship
+
+Query language 
+1. Property graphs ( tables of veritices and edges with index on edge, tail_vertex and head_vertex)
+2. Cypher query language 
+   1. Neo4j
+   2. Ex : (Miami) :WINTIN_IN (USA)
+      1. (LUCY) :BORN_IN (MIAMI)
+      2. Query : MATCH (person) :BORN_IN (US: location) RETURN person.name
+3. Triple stores and SPARQL ( 
+   1. info stoed in 3 parts statements
+   2. subject, predicate, object 
+   3. ex : Jim likes bananas
+
+Use Case:
+- Social graphs
+- Fraud detection
+- Recommendation engines
+
+
+| Feature | SQL | NoSQL |
+|--------|-----|------|
+| Schema | Fixed | Flexible / Dynamic |
+| Data type | Structured | Structured + Unstructured |
+| Scaling | Vertical | Horizontal |
+| Transactions | Strong (ACID) | Eventual consistency (BASE) |
+| Query language | SQL | Varies (JSON, APIs, etc.) |
+| Joins | Supported | Usually not |
+| Query Flexibility	| High| Limited
+| Operational Complexity | Lower initially | Higher (distributed systems)
+| Data Integrity | Enforced | Application-managed |
+
 ### Serialization and Deserialization
 
 ### Storage and Retrieval
+Write → Store data efficiently
+Read  → Retrieve data efficiently
+
+tradeoffs between reads vs writes vs space.
+#### Two Fundamental Storage Approaches
+##### Log-Structured Storage (Append-only)
+Write → append to file
+
+```
+set x = 1
+set x = 2
+set x = 3
+
+stored as 
+x=1
+x=2
+x=3  ← latest value
+```
+
+Problem : files grow quickly
+
+Solution : Compaction
+```
+Before:
+x=1, x=2, x=3
+
+After:
+x=3
+```
+
+Real systems:
+RocksDB
+Apache Cassandra
+
+Key advantages:
+Sequential disk writes → very fast
+Crash-safe (append-only)
+
+Key drawback:
+Reads are harder (need to find latest value)
+
+##### Update-in-place (B-Tree style)
+Find location → overwrite
+
+Real systems:
+MySQL
+PostgreSQL
+
+Tradeoff:
+Reads → fast
+Writes → slower (random disk I/O)
+
 #### Hash Indexes
-#### SSTable and LSM tree
+- key-value data
+- Similar to HashMap
+- It usually has 2 components
+  - In memory HashMap, key = hash(indexed columns) and value = byte offset on disk
+  - On disk, write ahead log
+
+Components : 
+a. Hash function : 
+h(key) → integer
+
+b. Buckets : 
+Bucket 42:
+→ (user123, offset=1000)
+→ (user456, offset=2000)
+
+Each entry points to:
+- Value OR
+- Offset in data file
+
+Collision :
+Chaining : Bucket → Linked list of entries
+
+What is Bitcask?
+Core idea:
+
+Store all data in append-only log files, and keep a hash map in memory that points to the latest value.
+
+```
+          +-------------------+
+          |   Hash Index      |   (in RAM)
+          | key → file offset |
+          +-------------------+
+                    |
+                    ↓
+          +-------------------+
+          |   Data Files      |   (append-only on disk)
+          +-------------------+
+```
+
+Write :
+```
+PUT(key, value)
+
+1. Append to log file:
+   [key, value]
+
+2. Update hash index:
+   key → offset in file
+```
+
+Read :
+```
+GET(x)
+
+1. Look up hash index → offset = 40
+2. Seek to file offset
+3. Read value
+```
+
+Delete : A special marker named tombstone is used
+
+Compaction : 
+1. Read old file
+2. Keep only latest values
+3. Write new compacted file
+4. Update index
+
+| Operation   | Cost                      |
+| ----------- | ------------------------- |
+| Write       | 🚀 Sequential (very fast) |
+| Read        | 🚀 O(1) + 1 disk seek     |
+| Range query | ❌ not supported           |
+
+Downside : Entire hash of keys to byte offset must fit in memory
+
+
+#### SSTable ( Sorted String Table) and LSM ( Log Structured Merge) tree
+
+In Hash index order dint matter, SSTable is an evolution of hash index where key value pair is sorted by key
+
+**LSM (Log-Structured Merge Tree)** is a storage engine optimized for fast writes.
+
+Core philosophy:
+
+> Write fast now, organize later.
+
+Instead of updating data in place (like B-Trees), LSM Trees:
+
+* Buffer writes in memory
+* Flush sorted files to disk
+* Merge files in background
+
+Used in:
+
+* Cassandra
+* RocksDB
+* LevelDB
+* HBase
+
+---
+
+##### Core Components
+
+```text
+Write Ahead Log (WAL)
+MemTable
+SSTables
+Compaction
+Bloom Filters
+Sparse Indexes
+```
+
+---
+
+# Write Path
+
+```text
+Write Request
+   ↓
+WAL (durability) (DISK)
+   ↓
+MemTable (sorted in memory) (MEMORY)
+   ↓
+Flush when full
+   ↓
+SSTable on disk (DISK)
+```
+
+###### WAL
+
+* Append-only log
+* Used for crash recovery
+
+###### MemTable
+
+* In-memory sorted structure
+* Often implemented using skip lists, red black tree or AVL tree
+
+---
+
+##### What is an SSTable?
+
+**SSTable = Sorted String Table**
+
+Properties:
+
+* Immutable
+* Sorted by key
+* Written sequentially
+
+Example:
+
+```text
+apple -> 100
+banana -> 200
+cat -> 300
+```
+
+---
+
+##### Read Path
+
+Reads typically do:
+
+```text
+1. Check MemTable
+2. Check Bloom Filter
+3. Use Sparse Index
+4. Read correct disk block
+```
+
+---
+
+##### Sparse Index
+
+Stores sampled keys and offsets.
+
+Example:
+
+```text
+apple -> offset 0
+cat   -> offset 400
+```
+
+Jump close to target, then scan.
+
+---
+
+##### Bloom Filters
+
+Avoid unnecessary disk reads.
+
+Answers:
+
+* Definitely not present
+* Probably present
+
+Helps reduce read amplification.
+
+---
+
+##### Compaction
+
+Merges SSTables.
+
+```text
+SST1:
+a=1
+b=2
+
+SST2:
+b=5
+
+Merge:
+a=1
+b=5
+```
+
+pointers in each SStable, SST1 and SST2, compare keys at pointers, 
+merge if key is same. Else write the smaller key and increment pointer.
+
+Benefits:
+
+* Removes duplicates
+* Removes tombstones
+* Improves reads
+
+---
+
+# Tombstones
+
+Deletes are stored as markers:
+
+```text
+user123 = TOMBSTONE
+```
+
+Removed during compaction.
+
+---
+
+##### Amplification Problems
+
+###### Read Amplification
+
+One read may check many SSTables.
+
+###### Write Amplification
+
+Compaction rewrites data multiple times.
+
+###### Space Amplification
+
+Old and new copies may coexist.
+
+---
+
+##### Compaction Strategies
+
+###### Size-Tiered
+
+* Merge similarly sized files
+* Good for write-heavy systems
+
+###### Leveled
+
+```text
+L0 → L1 → L2
+```
+
+* Better reads
+* More write amplification
+
+---
+
+##### Why LSM Trees Are Fast for Writes
+
+They convert:
+
+```text
+Random writes → Sequential writes
+```
+
+Major reason they scale well.
+
+---
+
+##### Best Use Cases
+
+Use LSM Trees for:
+
+* Write-heavy workloads
+* Time-series
+* Logging
+* Distributed databases
+* Event ingestion
+
+---
+
+##### Mental Model
+
+```text
+Buffer writes
+Flush sorted files
+Search across files
+Merge files in background
+```
+
+That is an LSM Tree.
+
+---
+
+##### One-Line Summary
+
+> LSM Trees use MemTables, immutable SSTables, and compaction to turn random writes into efficient sequential writes while keeping reads fast with Bloom filters and
+
+
 #### B Tree
+
+
+#### LSM vs B-Tree vs Hash index
+
+
+| Feature                   | Hash Index              | LSM Tree                    | B-Tree              |
+| ------------------------- | ----------------------- | --------------------------- | ------------------- |
+| Point Lookups             | Excellent               | Good                        | Excellent           |
+| Writes                    | Very fast               | Very fast                   | Moderate            |
+| Reads                     | Excellent (exact match) | Good                        | Excellent           |
+| Range Queries             | No                      | Good                        | Excellent           |
+| Sequential Write Friendly | No                      | Yes                         | No                  |
+| Compaction                | No                      | Required                    | No                  |
+| Memory Dependence         | High                    | Moderate                    | Lower               |
+| Typical Use               | Cache / KV              | Write-heavy distributed DBs | OLTP relational DBs |
+
 
 ## Distributed Data Concepts
 ### Replication
