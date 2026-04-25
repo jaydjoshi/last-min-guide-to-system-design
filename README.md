@@ -680,8 +680,399 @@ That is an LSM Tree.
 
 > LSM Trees use MemTables, immutable SSTables, and compaction to turn random writes into efficient sequential writes while keeping reads fast with Bloom filters and
 
+#### B Tree
+
 
 #### B Tree
+
+**B-Tree (more commonly B+ Tree in databases)** is a self-balancing tree structure optimized for disk access.
+
+Core philosophy:
+
+> Keep data organized at all times.
+
+Unlike LSM Trees that write first and organize later, B-Trees maintain sorted structure during every write.
+
+Used in:
+
+* MySQL (InnoDB)
+* PostgreSQL
+* SQLite
+* Oracle
+
+---
+
+# Core Components
+
+```text
+Root Node
+Internal Nodes
+Leaf Nodes
+Pages (Disk Blocks)
+Buffer Pool
+Write Ahead Log (WAL)
+Branching factor : Number of branches a node chan have
+```
+
+---
+
+##### High-Level Structure
+
+```text
+                  Root Page
+                     |
+         ----------------------------
+         |                          |
+     Internal Node             Internal Node
+         |                          |
+      Leaf Pages  <---- linked ----> Leaf Pages
+```
+
+Each node stores:
+
+```text
+[keys]
+[child pointers]
+```
+
+Leaf pages store:
+
+* Data rows (clustered)
+  OR
+* Row pointers (secondary index)
+
+---
+
+##### Why "Tree" but Optimized for Disk?
+
+Each node is sized to match a disk page:
+
+```text
+4KB / 8KB / 16KB pages
+```
+
+A page can hold many keys.
+
+That keeps tree height small.
+
+Example:
+
+```text
+Millions of rows
+Often only 3–4 levels deep
+Ex : 500 branching factor 4kb pages and 4 level of tree can store 256 TB of data
+```
+
+Very few disk reads.
+
+---
+
+# Read Path
+
+```text
+                     SEARCH
+                       |
+                       v
+                  Root Page
+                       |
+               Binary search in node
+                       |
+                       v
+                Follow child pointer
+                       |
+                     repeat
+                       |
+                       v
+                   Leaf Page
+```
+
+Each level:
+
+```text
+1 page read
+```
+
+Overall:
+
+```text
+O(log n)
+```
+
+---
+
+##### Example Lookup
+
+Suppose:
+
+```text
+Find key = 42
+```
+
+Tree:
+
+```text
+            [50]
+           /    \
+      [20,30]  [70,90]
+```
+
+42 < 50
+
+Go left.
+
+Find correct leaf.
+
+---
+
+##### Write Path
+
+Insert:
+
+```text
+1. Find correct leaf
+2. Insert key
+3. Split page if full
+4. Propagate split upward if needed
+```
+
+---
+
+##### Page Split
+
+Before:
+
+```text
+[10,20,30,40]
+```
+
+Insert 25:
+
+```text
+[10,20]  [25,30,40]
+```
+
+Middle key promoted upward.
+
+Tree remains balanced.
+
+---
+
+##### B+ Trees (What Real Databases Use)
+
+Most databases use **B+ Trees**, not textbook B-Trees.
+
+Difference:
+
+Internal nodes:
+
+* Keys only
+
+Leaf nodes:
+
+* Actual data or row pointers
+
+Leaves linked:
+
+```text
+[10,20] -> [30,40] -> [50,60]
+```
+
+Critical for range scans.
+
+---
+
+##### Range Queries
+
+Works naturally:
+
+```sql
+WHERE age BETWEEN 20 AND 40
+```
+
+Find first key.
+
+Then scan linked leaves.
+
+Very efficient.
+
+---
+
+##### Buffer Pool (Huge Optimization)
+
+Pages are cached in RAM.
+
+```text
+Disk Page -> Buffer Pool
+```
+
+Hot pages often never hit disk.
+
+Important for performance.
+
+---
+
+##### Write Ahead Log (WAL)
+
+Even B-Trees use WAL.
+
+Write flow:
+
+```text
+Update log first
+Then update page
+```
+
+Provides:
+
+* Crash safety
+* Recovery
+* Durability
+
+---
+
+##### Clustered vs Secondary Index
+
+###### Clustered Index
+
+Index IS the table.
+
+Rows stored in key order.
+
+Example:
+
+Primary key index in InnoDB.
+
+---
+
+###### Secondary Index
+
+Stores:
+
+```text
+secondary key -> row pointer
+```
+
+Requires extra lookup.
+
+---
+
+##### Covering Indexes
+
+Sometimes index stores enough data to answer query directly.
+
+```sql
+SELECT name FROM users WHERE id=5
+```
+
+Can avoid table lookup.
+
+Huge optimization.
+
+---
+
+##### Strengths
+
+###### Excellent Point Lookups
+
+```text
+O(log n)
+```
+
+---
+
+###### Excellent Range Queries
+
+Because sorted.
+
+---
+
+###### Strong Read Performance
+
+Often better than LSM.
+
+---
+
+##### Tradeoffs
+
+###### Random Writes
+
+Updates touch random pages.
+
+Slower than sequential LSM writes.
+
+---
+
+###### Page Splits
+
+Can cause write amplification.
+
+---
+
+###### Fragmentation
+
+Over time may require reorganization.
+
+---
+
+##### Concurrency (Very Important)
+
+Real databases add:
+
+* Latches on pages
+* Row locks
+* MVCC
+
+Readers and writers can coexist.
+
+---
+
+##### When B-Trees Win
+
+Use B-Trees for:
+
+* OLTP systems
+* Banking
+* Relational databases
+* Read-heavy workloads
+* Ordered access
+
+---
+
+##### When They Struggle
+
+Less ideal for:
+
+* Massive write-heavy ingestion
+* Time-series at huge scale
+* Append-heavy distributed systems
+
+LSM often wins there.
+
+---
+
+##### Mental Model
+
+```text
+Keep keys sorted
+Traverse few pages
+Split when full
+Stay balanced always
+```
+
+That is a B-Tree.
+
+---
+
+##### One-Line Summary
+
+> A B-Tree keeps data sorted in balanced disk pages so reads, writes, and range scans all remain efficient with logarithmic lookup cost.
+
+```text
+Hash Index  -> jump directly by hash
+B-Tree      -> navigate sorted pages
+LSM Tree    -> write sequentially, merge later
+```
+
 
 
 #### LSM vs B-Tree vs Hash index
@@ -699,11 +1090,899 @@ That is an LSM Tree.
 | Typical Use               | Cache / KV              | Write-heavy distributed DBs | OLTP relational DBs |
 
 
+### Encoding and Evolution
+
+Encoding means:
+
+```text
+Transforming in-memory data into a format
+that can be stored or transmitted.
+```
+
+Also called:
+
+* Serialization
+* Marshaling
+
+Reverse process:
+
+* Deserialization
+
+---
+
+#### Why Encoding Matters
+
+Used whenever data crosses boundaries:
+
+```text
+Application -> Disk
+Application -> Network
+Service A -> Service B
+Database -> Client
+```
+
+Goals:
+
+* Compact representation
+* Fast processing
+* Compatibility over time
+
+---
+
+> Data formats must evolve without breaking systems.
+
+This is schema evolution.
+
+---
+
+#### Major Encoding Types
+
+##### 1. Language-Specific Encodings
+
+Examples:
+
+* Java serialization
+* Python pickle
+
+Problems:
+
+* Language locked
+* Poor interoperability
+* Security issues
+
+Usually avoided.
+
+---
+
+##### 2. Text Formats
+
+Examples:
+
+* JSON
+* XML
+* CSV
+
+Pros:
+
+* Human readable
+* Flexible
+* Widely supported
+
+Cons:
+
+* Larger payloads
+* Weak typing
+
+---
+
+##### 3. Binary Formats
+
+Examples:
+
+* Avro
+* Protocol Buffers
+* Thrift
+
+Pros:
+
+* Smaller
+* Faster
+* Strong schemas
+
+Used heavily in distributed systems.
+
+---
+
+#### Schema Evolution
+
+Systems change.
+
+Fields get added.
+
+Schemas evolve.
+
+Need compatibility.
+
+---
+
+##### Backward Compatibility
+
+New code can read old data.
+
+---
+
+##### Forward Compatibility
+
+Old code can read newer data.
+
+---
+
+Both matter.
+
+---
+
+#### How Compatibility Works
+
+Typical rule:
+
+```text
+Unknown fields are ignored.
+```
+
+Example:
+
+Old schema:
+
+```text
+name
+age
+```
+
+New schema:
+
+```text
+name
+age
+email
+```
+
+Old consumers ignore email.
+
+System still works.
+
+---
+
+#### Avro vs Protocol Buffers (High Level)
+
+##### Protocol Buffers / Thrift
+
+Schema IDs on fields.
+
+```text
+1 -> name
+2 -> age
+```
+
+Supports evolution via field numbering.
+
+---
+
+##### Avro
+
+Writer schema + reader schema.
+
+Schemas negotiated during read.
+
+Very flexible.
+
+Popular in data pipelines.
+
+---
+
+#### Dataflow Between Processes
+
+Chapter also covers how encoded data moves.
+
+Three patterns:
+
+---
+
+##### Database Writes
+
+Application writes encoded records.
+
+Later readers may use different schema versions.
+
+Schema evolution required.
+
+---
+
+##### Service Calls (RPC)
+
+```text
+Service A <-> Service B
+```
+
+Requests and responses serialized.
+
+Versioning matters.
+
+---
+
+##### Message Passing
+
+Events often encoded.
+
+Example:
+
+```text
+OrderCreated event
+```
+
+Consumers may run different versions.
+
+Compatibility critical.
+
+---
+
+#### Why This Matters in Distributed Systems
+
+Services rarely upgrade simultaneously.
+
+Reality:
+
+```text
+Old producers
+New consumers
+Mixed versions everywhere
+```
+
+Encodings must tolerate this.
+
+---
+
+#### Tradeoffs
+
+| Format   | Human Readable | Compact | Schema Support |
+| -------- | -------------- | ------- | -------------- |
+| JSON     | Yes            | No      | Weak           |
+| Protobuf | No             | Yes     | Strong         |
+| Avro     | No             | Yes     | Strong         |
+
+---
+
+#### Real System Uses
+
+##### JSON
+
+* REST APIs
+* External interfaces
+
+---
+
+##### Protobuf
+
+* gRPC
+* Internal services
+
+---
+
+##### Avro
+
+* Kafka pipelines
+* Data platforms
+
+---
+
+#### Mental Models
+
+##### Encoding
+
+```text
+Objects -> Bytes
+```
+
+---
+
+##### Schema Evolution
+
+```text
+Change without breaking readers
+```
+
+---
+
+##### Compatibility
+
+```text
+Old and new versions coexist
+```
+
+#### One-Line Summary
+
+> Encoding turns data into bytes for storage or communication, while schema evolution ensures those formats can change over time without breaking distributed systems.
+
+
 ## Distributed Data Concepts
 ### Replication
-#### Leaders and followers
-#### Multi-leader
-#### Leaderless
+
+Replication means:
+
+```text
+Maintaining copies of the same data on multiple machines.
+```
+
+Goals:
+
+* High availability
+* Fault tolerance
+* Lower read latency
+* Scalability
+
+Core idea:
+
+> If one node fails, data should still be available.
+
+---
+
+#### Why Replicate Data?
+
+##### 1. Reliability
+
+```text
+Primary crashes
+Replica can take over
+```
+
+---
+
+##### 2. Read Scaling
+
+```text
+Many readers
+Spread reads across replicas
+```
+
+---
+
+##### 3. Geographic Locality
+
+Users read from nearby replicas.
+
+Lower latency.
+
+---
+
+#### Core Replication Models
+
+```text
+1. Leader-Follower
+2. Multi-Leader
+3. Leaderless
+```
+
+---
+
+#### 1. Leader-Follower Replication
+
+Also called:
+
+* Primary-replica
+* Master-slave (older term)
+
+---
+
+##### Architecture
+
+```text
+                 Write
+Client ------------------> Leader
+                              |
+                     Replication Log
+                              |
+                --------------------------
+                |                        |
+                v                        v
+             Follower1                Follower2
+
+Reads may go to replicas
+```
+
+---
+
+##### How It Works
+
+Writes:
+
+```text
+All writes go to leader
+```
+
+Leader records changes.
+
+Followers replay those changes.
+
+---
+
+##### Replication Log Options
+
+###### Statement-based
+
+Replicate SQL statements.
+
+```sql
+UPDATE users SET age=30 WHERE id=1;
+```
+
+Problems:
+
+* Non-deterministic behavior
+
+---
+
+##### Write-ahead log shipping
+
+Ship physical WAL records.
+
+Used in PostgreSQL.
+
+---
+
+##### Logical replication
+
+Replicate row-level changes.
+
+More flexible.
+
+---
+
+#### Synchronous vs Asynchronous Replication
+
+##### Synchronous
+
+```text
+Write acknowledged
+only after replica confirms
+```
+
+Pros:
+
+* Stronger durability
+
+Cons:
+
+* Higher latency
+
+---
+
+##### Asynchronous
+
+```text
+Leader returns immediately
+Replica catches up later
+```
+
+Pros:
+
+* Fast writes
+
+Cons:
+
+* Replication lag
+
+---
+
+#### Replication Lag
+
+Major concept.
+
+```text
+Write -> Leader updated
+Read -> Replica still stale
+```
+
+---
+
+##### Problems Caused
+
+###### Read-your-writes violation
+
+User posts message.
+
+Immediately refreshes.
+
+Post missing.
+
+---
+
+###### Monotonic read violation
+
+User sees newer data.
+Then older data.
+
+Confusing.
+
+---
+
+##### Common Solutions
+
+* Read from leader after writes
+* Sticky sessions
+* Route user to same replica
+
+---
+
+#### Failover
+
+If leader dies:
+
+```text
+Promote replica to new leader
+```
+
+---
+
+##### Problems
+
+###### Split Brain
+
+Two leaders elected.
+
+Data divergence.
+
+Bad.
+
+---
+
+##### Failover can be:
+
+* Manual
+* Automatic
+
+Often uses consensus systems.
+
+---
+
+#### Leader-Follower Strengths
+
+Good for:
+
+* Read-heavy systems
+* Traditional OLTP
+* Simpler replication model
+
+---
+
+#### 2. Multi-Leader Replication
+
+Now multiple leaders accept writes.
+
+---
+
+##### Architecture
+
+```text
+Region A Leader  <------> Region B Leader
+      |                         |
+  Local replicas             Local replicas
+```
+
+Each leader replicates to others.
+
+---
+
+#### Use Cases
+
+##### Multi-region writes
+
+Users write locally.
+
+---
+
+##### Offline-first apps
+
+Mobile sync.
+
+---
+
+##### Collaborative systems
+
+Multiple concurrent writers.
+
+---
+
+#### Big Problem: Write Conflicts
+
+Example:
+
+Two leaders update same row.
+
+```text
+A writes x=5
+B writes x=7
+```
+
+Conflict.
+
+---
+
+#### Conflict Resolution
+
+##### Last Write Wins (LWW)
+
+Use timestamps.
+
+Simple.
+
+Can lose data.
+
+---
+
+##### Application Resolution
+
+App merges conflicts.
+
+---
+
+##### CRDT-style approaches ( Conflict-free Replicated Data Types)
+
+Special mergeable structures.
+
+---
+
+#### Tradeoffs
+
+Pros:
+
+* Availability
+* Geographic writes
+
+Cons:
+
+* Conflict complexity
+
+---
+
+#### 3. Leaderless Replication
+
+Used by:
+
+* Cassandra
+* Dynamo-style systems
+
+---
+
+##### Architecture
+
+```text
+Client writes directly to multiple replicas
+```
+
+Example:
+
+```text
+          Write
+            |
+     -----------------
+     |       |       |
+     v       v       v
+    N1      N2      N3
+```
+
+No single leader.
+
+---
+
+#### Quorum Concept ( IMP)
+
+Suppose:
+
+```text
+N = 3 replicas
+W = 2 writes required
+R = 2 reads required
+```
+
+Rule:
+
+```text
+R + W > N
+```
+
+Can ensure overlap.
+
+---
+
+#### Example
+
+Write succeeds after 2 replicas.
+
+Read checks 2 replicas.
+
+Latest version can be found.
+
+---
+
+#### Read Repair
+
+If one replica stale:
+
+```text
+Read discovers stale replica
+Repair it
+```
+
+---
+
+#### Anti-Entropy Repair
+
+Background replica synchronization.
+
+---
+
+#### Strengths
+
+Very available.
+
+No single leader.
+
+---
+
+#### Challenges
+
+##### Sloppy Quorums
+
+Writes may go to temporary nodes.
+
+Can weaken guarantees.
+
+---
+
+##### Eventual Consistency
+
+Often not strongly consistent.
+
+---
+
+#### Consistency vs Availability Tradeoff
+
+Huge chapter theme.
+
+```text
+More consistency -> less availability
+More availability -> weaker consistency
+```
+
+---
+
+#### Compare Replication Models
+
+| Feature            | Leader-Follower | Multi-Leader | Leaderless |
+| ------------------ | --------------- | ------------ | ---------- |
+| Write Simplicity   | High            | Medium       | Medium     |
+| Read Scaling       | High            | High         | High       |
+| Conflict Risk      | Low             | High         | Medium     |
+| Availability       | Good            | Better       | Very High  |
+| Strong Consistency | Easier          | Harder       | Hard       |
+
+---
+
+#### Common Failure Scenarios
+
+##### Replica Lag
+
+Stale reads.
+
+---
+
+##### Network Partition
+
+Nodes cannot communicate.
+
+---
+
+##### Leader Crash
+
+Need failover.
+
+---
+
+##### Divergent Replicas
+
+Conflicting data versions.
+
+---
+
+#### Mental Models
+
+##### Leader-Follower
+
+```text
+One writer
+Many readers
+```
+
+---
+
+##### Multi-Leader
+
+```text
+Many writers
+Must resolve conflicts
+```
+
+---
+
+##### Leaderless
+
+```text
+Replicas vote via quorum
+```
+
+---
+
+#### Real Systems Mapping
+
+##### MySQL Read Replicas
+
+Leader-Follower.
+
+---
+
+##### PostgreSQL Streaming Replication
+
+Leader-Follower.
+
+---
+
+##### Cassandra
+
+Leaderless.
+
+---
+
+##### Dynamo-style Systems
+
+Leaderless.
+
+---
+
+#### When to Use What?
+
+##### Leader-Follower
+
+Use when:
+
+* Most writes centralized
+* Read scaling needed
+* Simplicity matters
+
+---
+
+##### Multi-Leader
+
+Use when:
+
+* Multi-region writes
+* Offline sync
+* Collaborative editing
+
+---
+
+##### Leaderless
+
+Use when:
+
+* Extreme availability
+* Distributed KV stores
+* Eventual consistency acceptable
+
+---
+
+#### One-Line Summary
+
+> Replication keeps multiple copies of data synchronized for availability and scalability, using leader-follower, multi-leader, or leaderless approaches—each trading off consistency, latency, and failure handling.
+
 
 ### Partitioning
 #### By key range
