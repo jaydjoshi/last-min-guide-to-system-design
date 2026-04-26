@@ -1830,11 +1830,13 @@ No single leader.
 
 #### Challenges
 
-##### Sloppy Quorums
+##### Sloppy Quorums and Hinted Handoff
 
 Writes may go to temporary nodes.
 
 Can weaken guarantees.
+
+When real node comes up, data is tranferred  from temporray node to real node. ( Hinted handoff)
 
 ---
 
@@ -1985,21 +1987,1875 @@ Use when:
 
 
 ### Partitioning
-#### By key range
-#### By Hash of key
+
+Partitioning (sharding) means:
+
+```text
+Splitting a large dataset across multiple machines.
+```
+
+Instead of storing all data on one node:
+
+```text
+Machine 1 -> Part of data
+Machine 2 -> Part of data
+Machine 3 -> Part of data
+```
+
+---
+
+#### Why Partition Data?
+
+Goals:
+
+* Scale beyond one machine
+* Increase throughput
+* Distribute storage
+* Reduce hotspots
+
+Core idea:
+
+> Spread both data and load.
+
+---
+
+#### Big Challenge
+
+Partitioning is easy.
+
+Good partitioning is hard.
+
+Goal:
+
+```text
+Balanced partitions
+Balanced traffic
+Balanced storage
+```
+
+---
+
+#### Partitioning Strategies
+
+##### 1. Key-Based Partitioning (Hash Partitioning)
+
+Use hash of key.
+
+```text
+partition = hash(key) % N
+```
+
+Example:
+
+```text
+user123 -> shard 2
+user456 -> shard 4
+```
+
+---
+
+##### Benefits
+
+Usually distributes load evenly.
+
+---
+
+##### Problem
+
+Loses key ordering.
+
+Range queries harder.
+
+---
+
+#### 2. Range Partitioning
+
+Split by key ranges.
+
+Example:
+
+```text
+A-M -> Shard 1
+N-Z -> Shard 2
+```
+
+Or:
+
+```text
+1-1M users -> Shard1
+1M-2M -> Shard2
+```
+
+---
+
+##### Benefits
+
+Good for:
+
+* Range scans
+* Ordered data
+
+---
+
+##### Problem
+
+Can create hotspots.
+
+Example:
+
+Recent timestamps all hit one shard.
+
+---
+
+#### Hotspots
+
+Major chapter theme.
+
+```text
+One partition overloaded
+Others idle
+```
+
+Bad.
+
+---
+
+##### Example
+
+Celebrity account traffic.
+
+All requests hit one shard.
+
+---
+
+##### Mitigations
+
+* Better keys
+* Add Random suffixes to celebrity keys and partition those keys. CLient merges all keys
+* Composite partition keys
+
+---
+
+#### Secondary Indexes and Partitioning
+
+Hard problem.
+
+---
+
+##### Local Secondary Indexes
+
+Each partition keeps own index.
+
+```text
+Index exists per shard
+```
+
+Simple.
+
+But global queries touch many shards.
+
+---
+
+##### Global Secondary Indexes
+
+Separate index spanning partitions.
+
+More powerful.
+
+More complex.
+
+---
+
+#### Rebalancing Partitions
+
+When:
+
+* Nodes added
+* Nodes removed
+* Data skew appears
+
+Need repartitioning.
+
+---
+
+#### Naive Rehashing Problem
+
+Adding one node may move huge data.
+
+Expensive.
+
+---
+
+#### Consistent Hashing (High Level)
+
+Maps nodes onto hash ring.
+
+```text
+Add node -> move limited data
+```
+
+Less disruption.
+
+Used in distributed systems.
+
+---
+
+#### Dynamic Partitioning
+
+Systems may split partitions automatically.
+
+```text
+Large shard
+   ↓
+Split into two shards
+```
+
+Common approach.
+
+---
+
+#### Request Routing
+
+How client finds right partition?
+
+Three models:
+
+---
+
+##### 1. Client Knows Mapping
+
+Client routes directly.
+
+---
+
+##### 2. Routing Tier
+
+```text
+Client -> Router -> Correct shard
+```
+Like zookeeper
+
+---
+
+## 3. Database Handles It
+
+Client sends anywhere.
+
+Cluster routes internally.
+
+Common protocol : Gossip protocol
+
+---
+
+# Partitioning + Replication
+
+Usually combined.
+
+```text
+Each shard may also have replicas.
+```
+
+Example:
+
+```text
+Shard 1:
+ Leader
+ Replicas
+
+Shard 2:
+ Leader
+ Replicas
+```
+
+This is common real-world design.
+
+---
+
+# Compare Partitioning Approaches
+
+| Feature           | Hash Partitioning | Range Partitioning |
+| ----------------- | ----------------- | ------------------ |
+| Even Distribution | Good              | Can skew           |
+| Range Queries     | Poor              | Excellent          |
+| Hotspot Risk      | Lower             | Higher             |
+| Ordering          | No                | Yes                |
+
+---
+
+#### Common Failure Modes
+
+##### Data Skew
+
+Some shards hold much more data.
+
+---
+
+##### Load Skew
+
+Some shards get much more traffic.
+
+---
+
+##### Hot Partitions
+
+Single partition overloaded.
+
+---
+
+#### Mental Models
+
+##### Hash Partitioning
+
+```text
+Spread keys evenly
+```
+
+---
+
+##### Range Partitioning
+
+```text
+Preserve order
+```
+
+---
+
+##### Rebalancing
+
+```text
+Move data without huge disruption
+```
+
+---
+
+#### Real System Examples
+
+##### Cassandra
+
+Partition by hashed partition key.
+
+---
+
+##### HBase
+
+Range partitioning.
+
+---
+
+##### Dynamo-style systems
+
+Consistent hashing.
+
+#### Choosing Partition Keys
+
+Critical decision.
+
+Good partition key:
+
+* High cardinality
+* Evenly distributed
+* Matches access pattern
+
+Bad key:
+
+* Causes hotspots
+* Skews load
+
+---
+
+#### When to Use What?
+
+##### Hash Partitioning
+
+Use when:
+
+* Uniform load important
+* Key lookups dominate
+
+---
+
+##### Range Partitioning
+
+Use when:
+
+* Ordered access important
+* Range scans common
+
+---
+
+#### One-Line Summary
+
+> Partitioning scales databases by distributing data across machines using hash or range strategies, while managing hotspots, rebalancing, routing, and interaction with replication.
+
 
 ### Transactions
-#### ACID
-#### BASE
+A transaction is:
 
-### Consistency
-#### Linerizability
+```text
+A group of operations that execute
+as one logical unit.
+```
 
-### Distributed transactions
-#### Two phase commit
-#### Three phase commit
-#### SAGA pattern
+Core idea:
 
-### Consensus
-#### Paxos
-#### Raft
+> Either all operations happen, or none do.
+
+---
+
+#### Why Transactions Exist
+
+They simplify correctness.
+
+Protect against:
+
+* Partial failures
+* Concurrency bugs
+* Data corruption
+
+---
+
+#### ACID Properties
+
+```text
+Atomicity
+Consistency
+Isolation
+Durability
+```
+
+---
+
+##### Atomicity
+
+All-or-nothing.
+
+Example:
+
+Bank transfer:
+
+```text
+Debit A
+Credit B
+```
+
+If second step fails:
+
+Rollback.
+
+---
+
+##### Consistency
+
+Transaction preserves database invariants.
+
+Example:
+
+```text
+Balance cannot go negative
+```
+
+---
+
+##### Isolation
+
+Concurrent transactions should not interfere.
+
+---
+
+##### Durability
+
+Committed data survives crashes.
+
+Typically via WAL.
+
+---
+
+#### Isolation Problems (Major Theme)
+
+Without proper isolation:
+
+Bad things happen.
+
+---
+
+##### Dirty Reads
+
+Transaction reads uncommitted data.
+
+Bad.
+
+---
+
+##### Dirty Writes
+
+Two transactions overwrite each other.
+
+Bad.
+
+---
+
+##### Read Skew
+
+A transaction sees part old state and part new state.
+
+```text
+Acc1 : $500
+Acc2 : $500
+Total balance : $1000
+
+Transfer from Acc1 to Acc2
+Mid way
+Acc1 : $400
+Acc2 : $500 ( Credit did not happen yet, it is in progress)
+Total balance in another transaction : $900
+
+```
+
+---
+
+##### Lost Updates
+
+Two writes.
+One disappears.
+
+---
+
+##### Write Skew
+
+Each write looks safe alone
+Unsafe together
+
+```text
+Doctor on call , Atleast 1 doctor must be on call.
+
+Doc1 on call = true
+Doc2 on call = true
+
+In 2 transactions, both read data for doct1 and doc2 and decide to take break since 1 will be  on call
+Doc1 on call = false ( takes break)
+Doc2 on call = false ( takes break)
+
+None are on call
+```
+
+---
+
+#### Isolation Levels
+
+---
+
+##### Read Committed
+
+Prevents:
+
+* Dirty reads
+* Dirty writes
+
+Common default.
+
+###### Implementation Approach 1: Lock-Based
+
+Writes
+
+Writers hold write locks until commit.
+
+```text
+T1 updates row X
+T1 holds write lock
+
+T2 tries to write X
+Blocked until T1 commits
+```
+
+Prevents dirty writes.
+
+---
+Reads
+
+Transactions can only see committed data.
+
+```text
+Committed balance = 1000
+Uncommitted update = 500
+
+Reader sees:
+1000
+```
+
+Never sees uncommitted 500.
+
+---
+
+###### Implementation Approach 2: MVCC (Multi version concurrency control)
+
+Used in PostgreSQL and MySQL.
+
+Each **statement** gets its own snapshot.
+
+```text
+Every query sees committed data
+at statement start.
+```
+
+---
+
+ Example
+
+```text
+T1:
+SELECT balance -> 100
+
+T2:
+UPDATE balance=200
+COMMIT
+
+T1:
+SELECT balance -> 200
+```
+
+Result changed inside transaction.
+
+Allowed under Read Committed.
+
+---
+
+##### Snapshot Isolation
+
+Transactions read consistent snapshot.
+
+Prevents:
+
+* Read skew
+  n- Some anomalies
+
+Often implemented with MVCC.
+
+###### Implementation: MVCC
+
+Rows keep versions.
+
+```text
+Row X:
+
+V1 created by txn10
+V2 created by txn22
+```
+
+Each transaction gets:
+
+```text
+snapshot timestamp
+```
+
+---
+
+Read Visibility
+
+Suppose:
+
+```text
+T1 starts at time 100
+```
+
+T1 sees only versions committed before 100.
+
+Later commits are invisible.
+
+---
+
+Reads
+
+No read locks needed.
+
+```text
+Readers don't block writers
+```
+
+Huge concurrency benefit.
+
+---
+
+Writes
+
+Typically use:
+
+```text
+First-committer-wins
+```
+
+If two transactions update same row:
+
+```text
+T1 writes A
+T2 writes A
+```
+
+One gets aborted.
+
+Prevents lost updates.
+
+
+
+---
+
+##### Serializable Isolation
+
+Strongest level.
+
+Guarantee:
+
+```text
+Concurrent execution behaves
+like serial execution.
+```
+
+Gold standard.
+
+###### Implementation Option A: Two-Phase Locking (2PL)
+
+Lock Types
+
+- Shared locks for reads
+- Exclusive locks for writes
+
+---
+
+Rule
+
+Growing phase:
+
+Acquire locks
+
+Shrinking phase:
+
+Release after commit
+
+```text
+Acquire...Acquire...Commit...Release
+```
+
+That is two-phase locking.
+
+---
+
+Why It Works?
+
+Conflicts force serial order.
+
+---
+
+Downsides
+
+- Blocking
+- Deadlocks
+- Lower concurrency
+
+---
+
+###### Implementation Option B: Serializable Snapshot Isolation (SSI)
+
+Used in PostgreSQL.
+
+Uses MVCC plus anomaly detection.
+
+---
+
+ Dependency Tracking
+
+Example:
+
+```text
+T1 reads A
+T2 modifies A
+```
+
+Dependency:
+
+```text
+T1 -> T2
+```
+
+Build serialization graph.
+
+---
+
+Dangerous Cycle
+
+```text
+T1 -> T2
+T2 -> T1
+```
+
+Cycle means anomaly possible.
+
+Abort one transaction.
+
+Prevents write skew.
+
+---
+
+---
+
+#### Distributed Transactions
+
+Harder.
+
+Spans multiple systems.
+
+---
+
+##### Two-Phase Commit (2PC)
+
+```text
+Phase 1: Prepare
+Phase 2: Commit
+```
+
+All participants agree.
+
+---
+
+##### Problem
+
+Coordinator failure can cause trouble.
+
+Expensive.
+
+---
+
+#### Tradeoff Theme
+
+Huge chapter message:
+
+```text
+Strong correctness
+vs
+Performance and availability
+```
+
+---
+
+#### Isolation Levels Comparison
+
+| Level              | Prevents                  | Implementation
+| ------------------ | ------------------------- | -----------------
+| Read Committed     | Dirty reads/writes        | Locks or MVCC
+| Snapshot Isolation | Read skew, many anomalies | MVCC + version visibility
+| Serializable       | All anomalies             | 2PL ( Strict write and read locking) / SSI (MVCC + dependency graph)
+
+---
+
+#### Real System Examples
+
+##### PostgreSQL
+
+MVCC + Serializable Snapshot Isolation.
+
+---
+
+##### MySQL InnoDB
+
+MVCC + locking.
+
+---
+
+##### Distributed Systems
+
+Often avoid distributed transactions when possible.
+
+Use events instead.
+
+
+#### One-Line Summary
+
+> Transactions provide correctness under failures and concurrency through ACID guarantees, isolation levels, MVCC, and serializability, trading stronger guarantees against performance and complexity.
+
+### The Trouble with Distributed Systems
+
+
+```text
+Distributed systems fail partially,
+not completely.
+```
+
+Single machines usually:
+
+- Work
+- Crash
+
+Distributed systems can be in weird intermediate states.
+
+---
+
+#### Partial Failures
+
+```text
+Some nodes work
+Some don't
+Network may lie
+```
+
+Hardest distributed systems problem.
+
+---
+
+#### Unreliable Networks
+
+Messages may:
+
+- Be delayed
+- Be lost
+- Arrive twice
+- Arrive out of order
+
+---
+
+##### Timeout Problem
+
+If a request times out:
+
+```text
+Did it fail?
+
+Or was it just slow?
+```
+
+You often cannot know.
+
+Major chapter insight.
+
+---
+
+#### Network Partitions
+
+Nodes may stop communicating.
+
+```text
+Node A can't see Node B
+```
+
+System may split.
+
+Now you must choose:
+
+- Wait
+- Keep serving requests
+- Risk inconsistency
+
+---
+
+#### Unreliable Clocks
+
+Physical clocks can lie.
+
+Problems:
+
+- Clock drift
+- Clock skew
+- NTP failures
+- Leap seconds
+
+---
+
+##### Rule
+
+```text
+Never trust wall-clock time
+for correctness.
+```
+
+Use ordering, not timestamps, for correctness.
+
+---
+
+#### Process Pauses
+
+Machines can appear dead but are not.
+
+Examples:
+
+- Garbage collection pause
+- VM freeze
+- Scheduler delays
+
+Can trigger false failure detection.
+
+---
+
+#### Failure Detection Is Uncertain
+
+Failures are inferred, not observed.
+
+Typically using:
+
+- Timeouts
+- Heartbeats
+- Quorums
+
+But these are guesses.
+
+---
+
+#### Local Knowledge Can Be Wrong
+
+A node may believe:
+
+```text
+I am leader
+```
+
+And be wrong.
+
+Important mental shift:
+
+```text
+Local knowledge may be false
+```
+
+---
+
+#### System Models
+
+##### Synchronous
+
+Bounded delays.
+
+Mostly unrealistic.
+
+---
+
+##### Asynchronous
+
+No timing guarantees.
+
+Closer to reality.
+
+---
+
+##### Reality
+
+Usually somewhere messy in between.
+
+---
+
+#### Logical Time
+
+Use ordering rather than physical clocks.
+
+Examples:
+
+- Lamport timestamps
+- Version vectors
+
+Helps reason about causality.
+
+---
+
+#### Byzantine Faults (High Level)
+
+Nodes may behave arbitrarily or maliciously.
+
+Separate, harder fault model.
+
+---
+
+#### Core Mental Models
+
+```text
+Networks are unreliable
+
+Clocks are unreliable
+
+Failure detection is uncertain
+```
+
+
+#### One-Line Summary
+
+> Distributed systems are hard because networks, clocks, and failure detection are unreliable, so systems must be designed assuming uncertainty and partial failure.
+
+### Consistency and Consensus 
+
+```text
+How do multiple machines agree
+despite failures?
+```
+
+That is consensus.
+
+---
+
+#### What is Consensus?
+
+Consensus means:
+
+```text
+Multiple nodes agree on one decision.
+```
+
+Examples:
+
+- Who is leader?
+- What value gets committed?
+- What is the correct order of operations?
+
+---
+
+#### Why Consensus Matters
+
+Needed for:
+
+- Leader election
+- Distributed locks
+- Metadata coordination
+- Configuration changes
+- Fault-tolerant replication
+
+---
+
+#### Core Requirements
+
+Consensus needs:
+
+##### Agreement
+
+```text
+All healthy nodes agree
+on same decision.
+```
+
+---
+
+##### Safety
+
+```text
+Never make conflicting decisions.
+```
+
+Example:
+
+Never two leaders for same term.
+
+---
+
+##### Liveness
+
+```text
+Eventually make progress.
+```
+
+---
+
+#### Quorums
+
+Suppose:
+
+```text
+5 nodes
+Majority = 3
+```
+
+Need majority agreement.
+
+Key idea:
+
+```text
+Majorities overlap.
+```
+
+This preserves safety.
+
+---
+
+#### Leader-Based Consensus
+
+Common model:
+
+```text
+Leader proposes decisions
+
+Followers replicate log
+
+Quorum commits them
+```
+
+---
+
+#### Raft (High Level)
+
+Three main parts:
+
+---
+
+##### 1. Leader Election
+
+Nodes vote.
+
+One becomes leader.
+
+```text
+Followers -> Candidates -> Leader
+```
+
+---
+
+##### 2. Log Replication
+
+Commands appended to replicated log.
+
+```text
+Write
+ ↓
+Leader log
+ ↓
+Followers copy
+```
+
+---
+
+##### 3. Commit Rule
+
+Entry committed after majority acknowledges.
+
+---
+
+#### Log as Source of Truth
+
+Important idea:
+
+```text
+State machine = replayed log
+```
+
+Consensus often means agreeing on log order.
+
+Not just agreeing on values.
+
+---
+
+#### Split Brain
+
+Danger:
+
+```text
+Two nodes think they are leader.
+```
+
+Consensus prevents this.
+
+---
+
+#### Strong Consistency
+
+Consensus often gives:
+
+```text
+Linearizable behavior
+```
+
+Feels like single machine.
+
+Read after write sees latest value.
+
+---
+
+#### Safety vs Availability
+
+Tradeoff:
+
+```text
+Prefer refusing progress
+
+over returning wrong answers
+```
+
+Huge chapter theme.
+
+---
+
+#### Failure Handling
+
+Consensus handles:
+
+- Node crashes
+- Delayed messages
+- Network partitions
+- Leader failures
+
+---
+
+#### Compare Concepts
+
+| Concept | Purpose |
+|--------|---------|
+| Replication | Copy data |
+| Quorum | Majority agreement |
+| Consensus | Agree under failures |
+| Raft | Protocol implementing consensus |
+
+---
+
+#### Real Systems
+
+Uses consensus:
+
+- etcd
+- ZooKeeper
+- Kafka metadata quorum
+- Kubernetes control plane
+
+
+# One-Line Summary
+
+> Consensus lets distributed systems agree safely under failures using quorums and protocols like Raft, typically by agreeing on an ordered replicated log.
+
+### Distributed transactions -  2PC, 3PC, and SAGA
+
+A distributed transaction spans multiple services or databases.
+
+Example:
+
+```text
+Order Service
+Payment Service
+Inventory Service
+```
+
+One business operation may touch all three.
+
+Problem:
+
+```text
+How do we keep all systems consistent
+if failures happen mid-operation?
+```
+
+Three classic approaches:
+
+```text
+1. Two-Phase Commit (2PC)
+2. Three-Phase Commit (3PC)
+3. Saga Pattern
+```
+
+---
+
+#### 1. Two-Phase Commit (2PC)
+
+##### Core Idea
+
+All participants agree to commit before anyone commits.
+
+Atomic commit across nodes.
+
+```text
+Either everyone commits
+or everyone aborts
+```
+
+---
+
+##### Roles
+
+Two roles:
+
+* Coordinator (Transaction Manager)
+* Participants (Resource Managers)
+
+Example:
+
+```text
+Coordinator
+   |
+----------------------
+|         |          |
+DB1      DB2       DB3
+```
+
+---
+
+##### Two Phases
+
+##### Phase 1 — Prepare (Voting)
+
+Coordinator asks:
+
+```text
+Can you commit?
+```
+
+Sends:
+
+```text
+PREPARE
+```
+
+Participants:
+
+* Execute transaction locally
+* Write changes to log
+* Lock resources
+* Vote:
+
+```text
+YES
+or
+NO
+```
+
+---
+
+###### Example
+
+```text
+Coordinator → Payment : PREPARE
+Coordinator → Inventory : PREPARE
+
+Payment → YES
+Inventory → YES
+```
+
+All vote yes.
+
+Move to phase 2.
+
+---
+
+##### Phase 2 — Commit
+
+Coordinator decides:
+
+```text
+GLOBAL COMMIT
+```
+
+Sends commit to all.
+
+```text
+Coordinator -> Commit
+Participants -> Commit locally
+```
+
+Done.
+
+---
+
+##### Abort Case
+
+If even one votes NO:
+
+```text
+GLOBAL ABORT
+```
+
+Everyone rolls back.
+
+---
+
+#### 2PC Flow
+
+```text
+Begin Transaction
+   ↓
+Prepare Request
+   ↓
+All vote yes?
+  /   \
+No     Yes
+ |      |
+Abort  Commit
+```
+
+---
+
+##### Why Logging Matters
+
+Participants persist:
+
+```text
+Prepared state
+```
+
+If crash occurs:
+
+Recovery can continue.
+
+Critical for durability.
+
+---
+
+##### Strengths
+
+* Atomicity
+* Strong consistency
+* Simple model conceptually
+
+---
+
+##### Problems with 2PC
+
+##### Blocking Problem
+
+Huge weakness.
+
+Suppose:
+
+```text
+Everyone prepared
+Coordinator crashes
+```
+
+Participants sit in:
+
+```text
+uncertain state
+```
+
+Cannot commit.
+Cannot abort.
+
+Blocked.
+
+Classic problem.
+
+---
+
+##### Coordinator is Single Point of Failure
+
+Even replicated coordinators are tricky.
+
+---
+
+##### Performance Cost
+
+* Multiple network round trips
+* Locks held longer
+* Lower availability
+
+---
+
+##### Where Used
+
+Traditional distributed databases:
+
+* XA transactions
+* Some RDBMS clusters
+
+Less common in microservices.
+
+---
+
+#### 2. Three-Phase Commit (3PC)
+
+Attempt to reduce blocking.
+
+Adds extra phase.
+
+---
+
+##### Idea
+
+Split commit into:
+
+```text
+1. CanCommit
+2. PreCommit
+3. DoCommit
+```
+
+---
+
+##### Phase 1 — CanCommit
+
+Like prepare.
+
+Ask:
+
+```text
+Can you commit?
+```
+
+Participants vote.
+
+---
+
+##### Phase 2 — PreCommit
+
+Coordinator says:
+
+```text
+Prepare to commit
+```
+
+Participants enter safe precommit state.
+
+Important:
+
+```text
+No uncertainty about whether commit possible.
+```
+
+---
+
+##### Phase 3 — DoCommit
+
+Final commit.
+
+```text
+Commit now.
+```
+
+---
+
+##### Flow
+
+```text
+CanCommit
+  ↓
+PreCommit
+  ↓
+DoCommit
+```
+
+---
+
+##### Why It Helps
+
+If coordinator fails after precommit,
+participants can often decide safely.
+
+Less blocking.
+
+---
+
+##### Problems
+
+Still has issues:
+
+* Assumes timing bounds
+* Complicated
+* Rarely used in practice
+
+Most systems prefer consensus instead.
+
+---
+
+#### 2PC vs 3PC
+
+| Feature        | 2PC      | 3PC     |
+| -------------- | -------- | ------- |
+| Phases         | 2        | 3       |
+| Blocking Risk  | Yes      | Reduced |
+| Complexity     | Lower    | Higher  |
+| Real-world Use | Commoner | Rare    |
+
+---
+
+#### 3. Saga Pattern
+
+Very different model.
+
+Instead of one global atomic transaction:
+
+```text
+Sequence of local transactions
+plus compensations
+```
+
+Huge idea.
+
+---
+
+##### Example
+
+Order workflow:
+
+```text
+1 Create Order
+2 Charge Payment
+3 Reserve Inventory
+```
+
+---
+
+Suppose step 3 fails.
+
+Use compensations:
+
+```text
+Undo Payment
+Cancel Order
+```
+
+---
+
+##### Concept
+
+Forward steps:
+
+```text
+T1 → T2 → T3
+```
+
+Compensations:
+
+```text
+C3 ← C2 ← C1
+```
+
+Reverse undo.
+
+---
+
+#### Orchestration Saga
+
+Central coordinator drives flow.
+
+```text
+Saga Orchestrator
+    |
+Payment
+Inventory
+Shipping
+```
+
+Like workflow engine.
+
+---
+
+##### Example
+
+```text
+Order Created
+ ↓
+Charge Payment
+ ↓
+Reserve Inventory
+ ↓
+Ship
+```
+
+If reserve fails:
+
+```text
+Refund Payment
+```
+
+---
+
+#### Choreography Saga
+
+No central orchestrator.
+
+Services react to events.
+
+```text
+OrderCreated event
+  ↓
+Payment processes
+  ↓
+Inventory reacts
+```
+
+Event-driven.
+
+---
+
+##### Pros
+
+* Decentralized
+* Looser coupling
+
+---
+
+##### Cons
+
+* Harder debugging
+* Complex event chains
+
+---
+
+#### Important Truth
+
+Sagas are NOT atomic.
+
+They provide:
+
+```text
+Eventual consistency
+```
+
+Very different from 2PC.
+
+---
+
+##### Compensation Is Hard
+
+Compensating action is not always simple rollback.
+
+Refunding payment ≠ erase payment.
+
+Semantic undo.
+
+Very important.
+
+---
+
+#### Saga Example Timeline
+
+```text
+T1 Create Order        Success
+T2 Charge Card         Success
+T3 Reserve Inventory   Fail
+
+Compensate:
+C2 Refund Card
+C1 Cancel Order
+```
+
+---
+
+#### When Sagas Work Well
+
+Good for:
+
+* Microservices
+* Long-running workflows
+* Business processes
+
+Examples:
+
+* Travel booking
+* E-commerce order flow
+* Payment workflows
+
+---
+
+#### When Sagas Are Bad
+
+Bad when hard invariants needed.
+
+Example:
+
+* Core banking ledger
+
+Use stronger transaction models.
+
+---
+
+#### Compare All Three
+
+| Feature       | 2PC       | 3PC     | Saga          |
+| ------------- | --------- | ------- | ------------- |
+| Atomic Commit | Yes       | Yes     | No            |
+| Blocking      | Yes       | Reduced | No            |
+| Availability  | Lower     | Medium  | Higher        |
+| Consistency   | Strong    | Strong  | Eventual      |
+| Complexity    | Medium    | High    | High          |
+| Typical Use   | Databases | Rare    | Microservices |
+
+---
+
+#### One-Line Summary
+
+> 2PC provides atomic distributed commit through voting and coordinated commit, 3PC reduces blocking with an extra phase but is rarely used, while Sagas trade atomicity for availability by using sequences of local transactions with compensating actions.
