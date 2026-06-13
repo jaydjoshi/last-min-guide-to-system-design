@@ -83,7 +83,7 @@
     - Consensus like Paxos or Raft
     - Zookeeper
 
-8. System Design questions with solutions
+8. System Design questions with solutions()
    - API Rate limiter
    - Consistent Hashing
    - Key value store
@@ -3859,3 +3859,220 @@ Use stronger transaction models.
 #### One-Line Summary
 
 > 2PC provides atomic distributed commit through voting and coordinated commit, 3PC reduces blocking with an extra phase but is rarely used, while Sagas trade atomicity for availability by using sequences of local transactions with compensating actions.
+
+
+## System Design Interview Vol. 1 & Vol. 2 - Categorized by Domain and Difficulty
+
+### 1. Foundations & Core System Design Concepts
+
+#### Easy
+- Scale From Zero To Millions Of Users
+  ![Image](Zero to millions scaling.png)
+- Back-of-the-envelope Estimation
+  ##### Common Power-of-Two Conversions
+| Unit | Value |
+|--------|--------|
+| 1 KB | 10^3 bytes |
+| 1 MB | 10^6 bytes |
+| 1 GB | 10^9 bytes |
+| 1 TB | 10^12 bytes |
+| 1 PB | 10^15 bytes |
+
+##### Latency Numbers Every Engineer Should Know
+
+| Operation | Time |
+|------------|-------|
+| L1 Cache Reference | 0.5 ns |
+| Branch Mispredict | 5 ns |
+| L2 Cache Reference | 7 ns |
+| Mutex Lock/Unlock | 100 ns |
+| Main Memory Reference | 100 ns |
+| SSD Random Read | 150 μs |
+| Disk Seek | 10 ms |
+| Network Request (same datacenter) | 0.5 ms |
+| Network Request (different datacenter) | 100 ms+ |
+
+##### Key Takeaway
+
+Memory is much faster than disk.
+
+```text
+CPU Cache << RAM << SSD << HDD << Network
+```
+
+##### Availability Numbers
+
+Availability is commonly measured using "nines".
+
+| Availability | Downtime per Year |
+|--------------|-------------------|
+| 99% | 3.65 days |
+| 99.9% | 8.76 hours |
+| 99.99% | 52.6 minutes |
+| 99.999% | 5.26 minutes |
+
+Total secods in a day = 24 * 2600 = 86400 ~= 100,000
+
+- A Framework For System Design Interviews
+
+
+#### Medium
+- Rate Limiter
+- Consistent Hashing
+- Unique ID Generator in Distributed Systems
+
+#### Hard
+- Key-Value Store
+
+---
+
+### 2. Storage & Data Infrastructure
+
+#### Easy
+- URL Shortener
+
+#### Medium
+- Google Drive
+- S3-like Object Storage
+
+#### Hard
+- Distributed Message Queue
+
+---
+
+### 3. Search, Discovery & Information Retrieval
+
+#### Easy
+- Web Crawler
+
+#### Medium
+- Search Autocomplete
+
+---
+
+### 4. Communication & Messaging Systems
+
+#### Easy
+- Notification System
+
+#### Medium
+- Chat System
+- Distributed Email Service
+
+
+---
+
+### 5. Social Media & Consumer Internet
+
+#### Medium
+- News Feed System
+
+#### Hard
+- YouTube
+
+---
+
+### 6. Location & Geospatial Systems
+
+#### Medium
+- Proximity Service
+
+#### Hard
+- Nearby Friends
+- Google Maps
+
+---
+
+### 7. Monitoring, Analytics & Advertising
+
+#### Medium
+- Metrics Monitoring
+
+#### Hard
+- Ad Click Event Aggregation
+
+---
+
+### 8. Gaming & Real-Time Ranking Systems
+
+#### Medium
+- Real-Time Gaming Leaderboard
+
+---
+
+### 9. Travel & Reservation Systems
+
+#### Medium
+- Hotel Reservation
+
+#### Hard
+- Hotel Reservation (Advanced Consistency Discussion)
+
+---
+
+### 10. Financial Systems (FinTech)
+
+#### Medium
+- Payment System
+
+#### Hard
+- Digital Wallet
+- Stock Exchange
+
+---
+
+## Overall Difficulty Ranking
+
+### Easy Tier
+1. Scale From Zero To Millions Of Users
+2. Back-of-the-envelope Estimation
+3. Framework For System Design Interviews
+4. URL Shortener
+5. Notification System
+6. Consistent Hashing
+7. Rate Limiter
+8. Unique ID Generator
+9. Web Crawler
+
+### Medium Tier
+1. News Feed
+2. Chat System
+3. Search Autocomplete
+4. Google Drive
+5. Proximity Service
+6. Metrics Monitoring
+7. Payment System
+8. Hotel Reservation
+9. Distributed Email Service
+10. Real-Time Gaming Leaderboard
+
+### Hard Tier
+1. Key-Value Store
+2. YouTube
+3. S3-like Object Storage
+4. Distributed Message Queue
+5. Nearby Friends
+6. Google Maps
+7. Ad Click Event Aggregation
+8. Digital Wallet
+9. Stock Exchange
+
+---
+
+### Recommended Order
+
+1. Foundations
+2. Rate Limiter
+3. Consistent Hashing
+4. URL Shortener
+5. Key-Value Store
+6. Notification System
+7. News Feed
+8. Chat System
+9. Search Autocomplete
+10. Google Drive
+11. Distributed Message Queue
+12. S3 Storage
+13. Payment System
+14. Digital Wallet
+15. Stock Exchange
