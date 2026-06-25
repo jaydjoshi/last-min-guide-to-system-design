@@ -3867,10 +3867,10 @@ Use stronger transaction models.
 
 #### Easy
 - Scale From Zero To Millions Of Users
-  ![Image](Zero to millions scaling.png)
+  ![Image](./images/Zero to millions scaling.png)
 - Back-of-the-envelope Estimation
   ##### Common Power-of-Two Conversions
-| Unit | Value |
+| Unit | Value | 
 |--------|--------|
 | 1 KB | 10^3 bytes |
 | 1 MB | 10^6 bytes |
@@ -3917,22 +3917,28 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 
 
 #### Medium
-- Rate Limiter
-- Consistent Hashing
-- Unique ID Generator in Distributed Systems
+- Rate Limiter [Done]
+  ![Image](./images/RateLimiter.png)
+- Consistent Hashing [Done]
+  ![Image](./images/ConsistentHashing.png)
+- Unique ID Generator in Distributed Systems [Done]
+  ![Image](./images/IDGenerator.png)
 
-#### Hard
-- Key-Value Store
+#### Medium
+- Key-Value Store [Done]
+  ![Image](./images/KeyValueStore.png)
 
 ---
 
 ### 2. Storage & Data Infrastructure
 
 #### Easy
-- URL Shortener
-
+- URL Shortener [ Done]
+  ![Image](./images/URLGenerator.png)
+- 
 #### Medium
 - Google Drive
+  ![Image](./images/GoogleDrive.png)
 - S3-like Object Storage
 
 #### Hard
@@ -3958,6 +3964,9 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 #### Medium
 - Chat System
 - Distributed Email Service
+
+#### Hard
+- Distributed Message Queue
 
 
 ---
