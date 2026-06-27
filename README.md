@@ -3940,9 +3940,8 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 - Google Drive
   ![Image](./images/GoogleDrive.png)
 - S3-like Object Storage
+  ![Image](./images/S3LikeObjectStorage.png)
 
-#### Hard
-- Distributed Message Queue
 
 ---
 
@@ -3950,7 +3949,7 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 
 #### Easy
 - Web Crawler
-
+  ![Image](./images/WebCrawler.png)
 #### Medium
 - Search Autocomplete
 
