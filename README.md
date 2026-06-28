@@ -3952,6 +3952,7 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
   ![Image](./images/WebCrawler.png)
 #### Medium
 - Search Autocomplete
+  ![Image](./images/AutoComplete.png)
 
 ---
 
@@ -3959,14 +3960,17 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 
 #### Easy
 - Notification System
+  ![Image](./images/NotificationSystem.png)
 
 #### Medium
 - Chat System
+  ![Image](./images/ChatSystem.png)
 - Distributed Email Service
+  ![Image](./images/DistributedEmailSystem.png)
 
 #### Hard
 - Distributed Message Queue
-
+  ![Image](./images/DistributedMessageQueue.png)
 
 ---
 
@@ -3974,6 +3978,8 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 
 #### Medium
 - News Feed System
+- Instagram
+- Twitter feed
 
 #### Hard
 - YouTube
