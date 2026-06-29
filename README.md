@@ -3937,9 +3937,9 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
   ![Image](./images/URLGenerator.png)
 - 
 #### Medium
-- Google Drive
+- Google Drive [ Done]
   ![Image](./images/GoogleDrive.png)
-- S3-like Object Storage
+- S3-like Object Storage [ Done]
   ![Image](./images/S3LikeObjectStorage.png)
 
 
@@ -3948,10 +3948,10 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 ### 3. Search, Discovery & Information Retrieval
 
 #### Easy
-- Web Crawler
+- Web Crawler [ Done]
   ![Image](./images/WebCrawler.png)
 #### Medium
-- Search Autocomplete
+- Search Autocomplete [ Done]
   ![Image](./images/AutoComplete.png)
 
 ---
@@ -3959,17 +3959,17 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 ### 4. Communication & Messaging Systems
 
 #### Easy
-- Notification System
+- Notification System [ Done]
   ![Image](./images/NotificationSystem.png)
 
 #### Medium
-- Chat System
+- Chat System [ Done]
   ![Image](./images/ChatSystem.png)
-- Distributed Email Service
+- Distributed Email Service [ Done]
   ![Image](./images/DistributedEmailSystem.png)
 
 #### Hard
-- Distributed Message Queue
+- Distributed Message Queue [ Done]
   ![Image](./images/DistributedMessageQueue.png)
 
 ---
@@ -3977,9 +3977,8 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 ### 5. Social Media & Consumer Internet
 
 #### Medium
-- News Feed System
-- Instagram
-- Twitter feed
+- News Feed System/ Twitter feed/ Instagram news feed [ Done]
+  ![Image](./images/NewsFeedSystem.png)
 
 #### Hard
 - YouTube
