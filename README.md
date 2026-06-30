@@ -3982,6 +3982,7 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 
 #### Hard
 - YouTube
+  ![Image](./images/Youtube.png)
 
 ---
 
@@ -4016,11 +4017,8 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 ### 9. Travel & Reservation Systems
 
 #### Medium
-- Hotel Reservation
-
-#### Hard
-- Hotel Reservation (Advanced Consistency Discussion)
-
+- Hotel Reservation [Done]
+  ![Image](./images/TravelBookingSystem.png)
 ---
 
 ### 10. Financial Systems (FinTech)
