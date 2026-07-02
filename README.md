@@ -4031,4 +4031,5 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 - Digital Wallet
   ![Image](./images/DigitalWallet.png)
 - Stock Exchange
+  ![Image](./images/StockExchange.png)
 - Fraud detection system
