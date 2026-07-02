@@ -4025,65 +4025,10 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 
 #### Medium
 - Payment System
+  ![Image](./images/PaymentSystem.png)
 
 #### Hard
 - Digital Wallet
+  ![Image](./images/DigitalWallet.png)
 - Stock Exchange
-
----
-
-## Overall Difficulty Ranking
-
-### Easy Tier
-1. Scale From Zero To Millions Of Users
-2. Back-of-the-envelope Estimation
-3. Framework For System Design Interviews
-4. URL Shortener
-5. Notification System
-6. Consistent Hashing
-7. Rate Limiter
-8. Unique ID Generator
-9. Web Crawler
-
-### Medium Tier
-1. News Feed
-2. Chat System
-3. Search Autocomplete
-4. Google Drive
-5. Proximity Service
-6. Metrics Monitoring
-7. Payment System
-8. Hotel Reservation
-9. Distributed Email Service
-10. Real-Time Gaming Leaderboard
-
-### Hard Tier
-1. Key-Value Store
-2. YouTube
-3. S3-like Object Storage
-4. Distributed Message Queue
-5. Nearby Friends
-6. Google Maps
-7. Ad Click Event Aggregation
-8. Digital Wallet
-9. Stock Exchange
-
----
-
-### Recommended Order
-
-1. Foundations
-2. Rate Limiter
-3. Consistent Hashing
-4. URL Shortener
-5. Key-Value Store
-6. Notification System
-7. News Feed
-8. Chat System
-9. Search Autocomplete
-10. Google Drive
-11. Distributed Message Queue
-12. S3 Storage
-13. Payment System
-14. Digital Wallet
-15. Stock Exchange
+- Fraud detection system
