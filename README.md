@@ -3990,10 +3990,13 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 
 #### Medium
 - Proximity Service
+  ![Image](./images/ProxityService.png)
 
 #### Hard
 - Nearby Friends
+  ![Image](./images/NearbyFriends.png)
 - Google Maps
+  ![Image](./images/GoogleMaps.png)
 
 ---
 
