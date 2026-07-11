@@ -4016,7 +4016,7 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 
 #### Medium
 - Real-Time Gaming Leaderboard
-
+  ![Image](./images/RealTimeGamingLeaderboard.png)
 ---
 
 ### 9. Travel & Reservation Systems
