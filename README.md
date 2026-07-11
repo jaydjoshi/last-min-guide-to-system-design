@@ -4004,6 +4004,7 @@ Total secods in a day = 24 * 2600 = 86400 ~= 100,000
 
 #### Medium
 - Metrics Monitoring
+  ![Image](./images/MetricsMonitoringSystem.png)
 
 #### Hard
 - Ad Click Event Aggregation
