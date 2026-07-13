@@ -3963,22 +3963,27 @@ Do Back-of-the-Envelope Calculations
 
 Pick the important non-functional requirements and discuss them in detail.
 
- Availability
+Availability
 - Higher availability targets (for example, p999 to p9999).
 - Multi-region and multi-AZ deployment.
 - Technologies such as EKS and Aurora.
 
- Reliability
+Reliability
 - Handling software failures.
 - Handling hardware failures.
 - Handling human errors.
 
- Scalability
+Scalability
 - Horizontal scaling.
 
- Observability
+Observability
 - Monitoring.
 - Alerting.
+
+Security
+- DDos : Rate limiter
+- Evesdropping and Man in middle attack : HTTPS and mTLS
+- e2e encrytion
 
 #### Medium
 - Rate Limiter [Done]
