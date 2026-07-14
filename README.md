@@ -3988,15 +3988,19 @@ Security
 #### Medium
 - Rate Limiter [Done]
   ![Image](./images/RateLimiter.png)
+Algo: Token bucket, Leaky bucket, Fixed window log, sliding window log, sliding window counter
+
 - Consistent Hashing [Done]
   ![Image](./images/ConsistentHashing.png)
+
 - Unique ID Generator in Distributed Systems [Done]
   ![Image](./images/IDGenerator.png)
+64 bits ID by Twitter i.e. snowflake. 41 bits timestamp in milis, 10 bits machine + datacenter and 12 bits sequence
 
 #### Medium
 - Key-Value Store [Done]
   ![Image](./images/KeyValueStore.png)
-
+Check like cassandra or redis
 ---
 
 ### 2. Storage & Data Infrastructure
@@ -4004,13 +4008,16 @@ Security
 #### Easy
 - URL Shortener [ Done]
   ![Image](./images/URLGenerator.png)
-- 
+Sequence to base 62 encoding ( 26+26+10 alphanumeric)
+
 #### Medium
 - Google Drive [ Done]
   ![Image](./images/GoogleDrive.png)
+Resumable uploads
+
 - S3-like Object Storage [ Done]
   ![Image](./images/S3LikeObjectStorage.png)
-
+Resumable uploads, erasure coding
 
 ---
 
@@ -4019,10 +4026,11 @@ Security
 #### Easy
 - Web Crawler [ Done]
   ![Image](./images/WebCrawler.png)
+Frontier URLs -> HTML downloader -> content parser -> URL fetcher -> URL seen -> repeat
 #### Medium
 - Search Autocomplete [ Done]
   ![Image](./images/AutoComplete.png)
-
+Trie DB
 ---
 
 ### 4. Communication & Messaging Systems
@@ -4030,17 +4038,21 @@ Security
 #### Easy
 - Notification System [ Done]
   ![Image](./images/NotificationSystem.png)
+Adapters for FCM, APN, MAilChimp, twillio, gupshup
 
 #### Medium
 - Chat System [ Done]
   ![Image](./images/ChatSystem.png)
+Websocket
+
 - Distributed Email Service [ Done]
   ![Image](./images/DistributedEmailSystem.png)
+SMTP and IMAP
 
 #### Hard
 - Distributed Message Queue [ Done]
   ![Image](./images/DistributedMessageQueue.png)
-
+Kafka like queue, producer, Queue = [broker ( data storage, state storage), metadata storage and service discovery], consumers ( consumer groups)
 ---
 
 ### 5. Social Media & Consumer Internet
@@ -4048,11 +4060,13 @@ Security
 #### Medium
 - News Feed System/ Twitter feed/ Instagram news feed [ Done]
   ![Image](./images/NewsFeedSystem.png)
+fanout, push vs pull
 
 #### Hard
 - YouTube
   ![Image](./images/Youtube.png)
-
+Video uploader -> transcoder ( HLS/ DASH)
+Streaming server -> CDN
 ---
 
 ### 6. Location & Geospatial Systems
@@ -4060,13 +4074,19 @@ Security
 #### Medium
 - Proximity Service
   ![Image](./images/ProxityService.png)
+Geohash ( Redis GEO = Geohash + sorted sets) / Quadtree  ( in memory)
 
 #### Hard
 - Nearby Friends
   ![Image](./images/NearbyFriends.png)
+GeoHash use RedisGeo ( GeoHash + SortedSet)
+
 - Google Maps
   ![Image](./images/GoogleMaps.png)
-
+World map at 21 different zoom levels
+Routing tile ( name = geohash, contains nodes and edges and link to otehr routing tiles)
+Metadata
+Flows, capture location of user and display navigation
 ---
 
 ### 7. Monitoring, Analytics & Advertising
@@ -4074,11 +4094,15 @@ Security
 #### Medium
 - Metrics Monitoring
   ![Image](./images/MetricsMonitoringSystem.png)
+Metrics collector agent -> queue -> ingestion svc -> aggregation svc -> alerts / dashboard
+flows : ingestion, alerts and dashboard
+TSDB like prometheus or InfluxDB
+Key concept: TSDB ( InfluxDB or Prometheus)
 
 #### Hard
 - Ad Click Event Aggregation
   ![Image](./images/AdClickEventAggregationSystem.png)
-
+Ad click ingestion, aggregation, display
 ---
 
 ### 8. Gaming & Real-Time Ranking Systems
@@ -4086,6 +4110,7 @@ Security
 #### Medium
 - Real-Time Gaming Leaderboard
   ![Image](./images/RealTimeGamingLeaderboard.png)
+Ingestion, update leaderboard ( redis sorted sets)
 ---
 
 ### 9. Travel & Reservation Systems
@@ -4093,6 +4118,7 @@ Security
 #### Medium
 - Hotel Reservation [Done]
   ![Image](./images/TravelBookingSystem.png)
+Ensure double booking
 ---
 
 ### 10. Financial Systems (FinTech)
@@ -4100,12 +4126,22 @@ Security
 #### Medium
 - Payment System
   ![Image](./images/PaymentSystem.png)
-
+Dist transactions, idempotency, security
 #### Hard
 - Digital Wallet
   ![Image](./images/DigitalWallet.png)
+Dist transactions, idempotency, security
+
 - Stock Exchange
   ![Image](./images/StockExchange.png)
+Low latency, monolith, FIX, multicast, use mmap instead of queue
+
 - Fraud detection system
   ![Image](./images/FraudDetection.png)
-- Internals of Redis
+Flows: detect fraud in real time ( feature store [user, device, merchant, location, card, ip], Rule engine [business experts adds rules], velocity checks ,
+- ML prediction ( gives a probablity), Graph fraud detection, 
+- Risk score aggregation
+Rules : 30 + ML :40 + Velocity : 20 + Graph :25
+= Total : 115 ( normalise to 0 to 100 and create a spectrum of approve, OTP, manual review, reject)
+learn from historical frauds
+types of frauds: card stolen, ID stolen, card testing, velocity fraud, location fraud, account takeover
