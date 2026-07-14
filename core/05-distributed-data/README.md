@@ -1,0 +1,4 @@
+# Distributed Data
+
+- Replication
+- Partitioning

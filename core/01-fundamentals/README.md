@@ -1,0 +1,5 @@
+# Fundamentals
+
+- Reliability
+- Scalability
+- Maintainability
