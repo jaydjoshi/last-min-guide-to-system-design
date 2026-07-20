@@ -3987,19 +3987,19 @@ Security
 
 #### Medium
 - Rate Limiter [Done]
-  ![Image](designs/categories/1-foundations/medium/rate-limiter/RateLimiter.png)
+  ![Image](designs/categories/01-foundations/medium/rate-limiter/RateLimiter.png)
 Algo: Token bucket, Leaky bucket, Fixed window log, sliding window log, sliding window counter
 
 - Consistent Hashing [Done]
-  ![Image](designs/categories/1-foundations/medium/consistent-hashing/ConsistentHashing.png)
+  ![Image](designs/categories/01-foundations/medium/consistent-hashing/ConsistentHashing.png)
 
 - Unique ID Generator in Distributed Systems [Done]
-  ![Image](designs/categories/1-foundations/medium/unique-id-generator/IDGenerator.png)
+  ![Image](designs/categories/01-foundations/medium/unique-id-generator/IDGenerator.png)
 64 bits ID by Twitter i.e. snowflake. 41 bits timestamp in milis, 10 bits machine + datacenter and 12 bits sequence
 
 #### Medium
 - Key-Value Store [Done]
-  ![Image](designs/categories/1-foundations/hard/key-value-store/KeyValueStore.png)
+  ![Image](designs/categories/01-foundations/hard/key-value-store/KeyValueStore.png)
 Check like cassandra or redis
 ---
 
@@ -4012,11 +4012,11 @@ Sequence to base 62 encoding ( 26+26+10 alphanumeric)
 
 #### Medium
 - Google Drive [ Done]
-  ![Image](designs/categories/2-storage-and-data-infrastructure/medium/google-drive/GoogleDrive.png)
+  ![Image](designs/categories/02-storage-and-data-infrastructure/medium/google-drive/GoogleDrive.png)
 Resumable uploads
 
 - S3-like Object Storage [ Done]
-  ![Image](designs/categories/2-storage-and-data-infrastructure/medium/s3-like-bject-storage/S3LikeObjectStorage.png)
+  ![Image](designs/categories/02-storage-and-data-infrastructure/medium/s3-like-bject-storage/S3LikeObjectStorage.png)
 Resumable uploads, erasure coding
 
 ---
@@ -4025,11 +4025,11 @@ Resumable uploads, erasure coding
 
 #### Easy
 - Web Crawler [ Done]
-  ![Image](designs/categories/3-search-discovery-information-retrieval/easy/web-crawler/WebCrawler.png)
+  ![Image](designs/categories/03-search-discovery-information-retrieval/easy/web-crawler/WebCrawler.png)
 Frontier URLs -> HTML downloader -> content parser -> URL fetcher -> URL seen -> repeat
 #### Medium
 - Search Autocomplete [ Done]
-  ![Image](designs/categories/3-search-discovery-information-retrieval/medium/search-autocomplete/AutoComplete.png)
+  ![Image](designs/categories/03-search-discovery-information-retrieval/medium/search-autocomplete/AutoComplete.png)
 Trie DB
 ---
 
@@ -4037,21 +4037,21 @@ Trie DB
 
 #### Easy
 - Notification System [ Done]
-  ![Image](designs/categories/4-communication-and-messaging-systems/easy/notification-system/NotificationSystem.png)
+  ![Image](designs/categories/04-communication-and-messaging-systems/easy/notification-system/NotificationSystem.png)
 Adapters for FCM, APN, MAilChimp, twillio, gupshup
 
 #### Medium
 - Chat System [ Done]
-  ![Image](designs/categories/4-communication-and-messaging-systems/medium/chat-system/ChatSystem.png)
+  ![Image](designs/categories/04-communication-and-messaging-systems/medium/chat-system/ChatSystem.png)
 Websocket
 
 - Distributed Email Service [ Done]
-  ![Image](designs/categories/4-communication-and-messaging-systems/medium/distributed-email-service/DistributedEmailSystem.png)
+  ![Image](designs/categories/04-communication-and-messaging-systems/medium/distributed-email-service/DistributedEmailSystem.png)
 SMTP and IMAP
 
 #### Hard
 - Distributed Message Queue [ Done]
-  ![Image](designs/categories/4-communication-and-messaging-systems/hard/distributed-message-queue/DistributedMessageQueue.png)
+  ![Image](designs/categories/04-communication-and-messaging-systems/hard/distributed-message-queue/DistributedMessageQueue.png)
 Kafka like queue, producer, Queue = [broker ( data storage, state storage), metadata storage and service discovery], consumers ( consumer groups)
 ---
 
@@ -4059,12 +4059,12 @@ Kafka like queue, producer, Queue = [broker ( data storage, state storage), meta
 
 #### Medium
 - News Feed System/ Twitter feed/ Instagram news feed [ Done]
-  ![Image](designs/categories/5-social-media-and-consumer-internet/medium/news-feed-system/NewsFeedSystem.png)
+  ![Image](designs/categories/05-social-media-and-consumer-internet/medium/news-feed-system/NewsFeedSystem.png)
 fanout, push vs pull
 
 #### Hard
 - YouTube
-  ![Image](designs/categories/5-social-media-and-consumer-internet/hard/youtube/Youtube.png)
+  ![Image](designs/categories/05-social-media-and-consumer-internet/hard/youtube/Youtube.png)
 Video uploader -> transcoder ( HLS/ DASH)
 Streaming server -> CDN
 ---
@@ -4073,16 +4073,16 @@ Streaming server -> CDN
 
 #### Medium
 - Proximity Service
-  ![Image](designs/categories/6-location-and-geospatial-systems/medium/proximity-service/ProxityService.png)
+  ![Image](designs/categories/06-location-and-geospatial-systems/medium/proximity-service/ProxityService.png)
 Geohash ( Redis GEO = Geohash + sorted sets) / Quadtree  ( in memory)
 
 #### Hard
 - Nearby Friends
-  ![Image](designs/categories/6-location-and-geospatial-systems/hard/nearby-friends/NearbyFriends.png)
+  ![Image](designs/categories/06-location-and-geospatial-systems/hard/nearby-friends/NearbyFriends.png)
 GeoHash use RedisGeo ( GeoHash + SortedSet)
 
 - Google Maps
-  ![Image](designs/categories/6-location-and-geospatial-systems/hard/google-maps/GoogleMaps.png)
+  ![Image](designs/categories/06-location-and-geospatial-systems/hard/google-maps/GoogleMaps.png)
 World map at 21 different zoom levels
 Routing tile ( name = geohash, contains nodes and edges and link to otehr routing tiles)
 Metadata
@@ -4093,7 +4093,7 @@ Flows, capture location of user and display navigation
 
 #### Medium
 - Metrics Monitoring
-  ![Image](designs/categories/7-monitoring-analytics-and-advertising/medium/metrics-monitoring/MetricsMonitoringSystem.png)
+  ![Image](designs/categories/07-monitoring-analytics-and-advertising/medium/metrics-monitoring/MetricsMonitoringSystem.png)
 Metrics collector agent -> queue -> ingestion svc -> aggregation svc -> alerts / dashboard
 flows : ingestion, alerts and dashboard
 TSDB like prometheus or InfluxDB
@@ -4101,7 +4101,7 @@ Key concept: TSDB ( InfluxDB or Prometheus)
 
 #### Hard
 - Ad Click Event Aggregation
-  ![Image](designs/categories/7-monitoring-analytics-and-advertising/hard/ad-click-event-aggregation/AdClickEventAggregationSystem.png)
+  ![Image](designs/categories/07-monitoring-analytics-and-advertising/hard/ad-click-event-aggregation/AdClickEventAggregationSystem.png)
 Ad click ingestion, aggregation, display
 ---
 
@@ -4109,7 +4109,7 @@ Ad click ingestion, aggregation, display
 
 #### Medium
 - Real-Time Gaming Leaderboard
-  ![Image](designs/categories/8-gaming/medium/real-time-gaming-leaderboard/RealTimeGamingLeaderboard.png)
+  ![Image](designs/categories/08-gaming/medium/real-time-gaming-leaderboard/RealTimeGamingLeaderboard.png)
 Ingestion, update leaderboard ( redis sorted sets)
 ---
 
@@ -4117,7 +4117,7 @@ Ingestion, update leaderboard ( redis sorted sets)
 
 #### Medium
 - Hotel Reservation [Done]
-  ![Image](designs/categories/9-travel-and-reservation-systems/medium/hotel-reservation/TravelBookingSystem.png)
+  ![Image](designs/categories/09-travel-and-reservation-systems/medium/hotel-reservation/TravelBookingSystem.png)
 Ensure double booking
 ---
 
