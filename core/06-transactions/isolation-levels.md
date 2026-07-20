@@ -1,329 +1,285 @@
-# Isolation Levels
+# Database Concurrency Anomalies & Isolation Levels (DDIA Cheat Sheet)
 
----
+## 1. Dirty Read 🟤
 
-##### Read Committed
+**Definition:** Reading data written by another transaction that has **not yet committed**.
 
-Prevents:
-
-* Dirty reads
-* Dirty writes
-
-Common default.
-
-###### Implementation Approach 1: Lock-Based
-
-Writes
-
-Writers hold write locks until commit.
-
-```text
-T1 updates row X
-T1 holds write lock
-
-T2 tries to write X
-Blocked until T1 commits
-```
-
-Prevents dirty writes.
-
----
-Reads
-
-Transactions can only see committed data.
-
-```text
-Committed balance = 1000
-Uncommitted update = 500
-
-Reader sees:
-1000
-```
-
-Never sees uncommitted 500.
-
----
-
-###### Implementation Approach 2: MVCC (Multi version concurrency control)
-
-Used in PostgreSQL and MySQL.
-
-Each **statement** gets its own snapshot.
-
-```text
-Every query sees committed data
-at statement start.
-```
-
----
-
- Example
+### Example
 
 ```text
 T1:
-SELECT balance -> 100
+Update Balance = 1000
+(Not committed)
+
+        ↓
 
 T2:
-UPDATE balance=200
-COMMIT
+Read Balance = 1000
+
+        ↓
 
 T1:
-SELECT balance -> 200
+Rollback
 ```
 
-Result changed inside transaction.
+T2 read data that never officially existed.
 
-Allowed under Read Committed.
+**Memory Trick:**
+> **Dirty = Uncommitted data.**
 
 ---
 
-##### Snapshot Isolation
+## 2. Non-repeatable Read 🔵
 
-Transactions read consistent snapshot.
+**Definition:** Reading the **same row twice** within a transaction returns different values because another transaction committed an update.
 
-Prevents:
-
-* Read skew
-  n- Some anomalies
-
-Often implemented with MVCC.
-
-###### Implementation: MVCC
-
-Rows keep versions.
+### Example
 
 ```text
-Row X:
+T1:
+Read Balance = 100
 
-V1 created by txn10
-V2 created by txn22
+        ↓
+
+T2:
+Update Balance = 200
+Commit
+
+        ↓
+
+T1:
+Read Balance = 200
 ```
 
-Each transaction gets:
+**Memory Trick:**
+> **Same row, different value.**
+
+---
+
+## 3. Read Skew 🟣
+
+**Definition:** Reading different rows from **different snapshots**, resulting in an inconsistent view of the database.
+
+### Example
+
+Initial state:
 
 ```text
-snapshot timestamp
+Account A = 100
+Account B = 100
 ```
 
----
-
-Read Visibility
-
-Suppose:
+Money transfer:
 
 ```text
-T1 starts at time 100
+A = 50
+B = 150
 ```
 
-T1 sees only versions committed before 100.
-
-Later commits are invisible.
-
----
-
-Reads
-
-No read locks needed.
+Transaction reads:
 
 ```text
-Readers don't block writers
+A = 100
+B = 150
 ```
 
-Huge concurrency benefit.
+This combination never actually existed.
+
+**Memory Trick:**
+> **Mixed snapshot.**
 
 ---
 
-Writes
+## 4. Phantom Read 👻
 
-Typically use:
+**Definition:** Repeating the same query returns a different **set of rows** because another transaction inserted or deleted matching rows.
+
+### Example
+
+```sql
+SELECT * FROM Orders
+WHERE amount > 1000;
+```
+
+Initially:
 
 ```text
-First-committer-wins
+5 rows
 ```
 
-If two transactions update same row:
+Another transaction inserts:
 
 ```text
-T1 writes A
-T2 writes A
+Order(amount = 5000)
+Commit
 ```
 
-One gets aborted.
-
-Prevents lost updates.
-
-
-
----
-
-##### Serializable Isolation
-
-Strongest level.
-
-Guarantee:
+Running the same query again:
 
 ```text
-Concurrent execution behaves
-like serial execution.
+6 rows
 ```
 
-Gold standard.
-
-###### Implementation Option A: Two-Phase Locking (2PL)
-
-Lock Types
-
-- Shared locks for reads
-- Exclusive locks for writes
+**Memory Trick:**
+> **Ghost rows appeared.**
 
 ---
 
-Rule
+## 5. Lost Update 🟠
 
-Growing phase:
+**Definition:** Two transactions update the same row concurrently, causing one update to be overwritten.
 
-Acquire locks
-
-Shrinking phase:
-
-Release after commit
+### Example
 
 ```text
-Acquire...Acquire...Commit...Release
+Counter = 10
+
+T1 reads 10
+T2 reads 10
+
+T1 writes 11
+T2 writes 11
 ```
 
-That is two-phase locking.
-
----
-
-Why It Works?
-
-Conflicts force serial order.
-
----
-
-Downsides
-
-- Blocking
-- Deadlocks
-- Lower concurrency
-
----
-
-###### Implementation Option B: Serializable Snapshot Isolation (SSI)
-
-Used in PostgreSQL.
-
-Uses MVCC plus anomaly detection.
-
----
-
- Dependency Tracking
-
-Example:
+Expected:
 
 ```text
-T1 reads A
-T2 modifies A
+12
 ```
 
-Dependency:
+Actual:
 
 ```text
-T1 -> T2
+11
 ```
 
-Build serialization graph.
+**Memory Trick:**
+> **Someone's update disappeared.**
 
 ---
 
-Dangerous Cycle
+## 6. Dirty Write 🔴
+
+**Definition:** One transaction overwrites another transaction's **uncommitted write**.
+
+### Example
 
 ```text
-T1 -> T2
-T2 -> T1
+T1:
+Write Balance = 200
+(Not committed)
+
+        ↓
+
+T2:
+Write Balance = 300
+Commit
+
+        ↓
+
+T1:
+Rollback
 ```
 
-Cycle means anomaly possible.
+This creates ambiguity about the correct final value.
 
-Abort one transaction.
+**Memory Trick:**
+> **Overwriting unfinished work.**
 
-Prevents write skew.
-
----
-
----
-
-#### Distributed Transactions
-
-Harder.
-
-Spans multiple systems.
+> **Note:** Almost all modern relational databases prevent Dirty Writes, regardless of the isolation level.
 
 ---
 
-##### Two-Phase Commit (2PC)
+## 7. Write Skew 🟢
+
+**Definition:** Two concurrent transactions modify **different rows** based on the same snapshot, violating a business rule.
+
+### Example
+
+Initial state:
 
 ```text
-Phase 1: Prepare
-Phase 2: Commit
+Alice = On Call
+Bob   = On Call
 ```
 
-All participants agree.
-
----
-
-##### Problem
-
-Coordinator failure can cause trouble.
-
-Expensive.
-
----
-
-#### Tradeoff Theme
-
-Huge chapter message:
+Transaction A:
 
 ```text
-Strong correctness
-vs
-Performance and availability
+Bob is on call.
+I'll go off.
 ```
 
----
+Transaction B:
 
-#### Isolation Levels Comparison
+```text
+Alice is on call.
+I'll go off.
+```
 
-| Level              | Prevents                  | Implementation
-| ------------------ | ------------------------- | -----------------
-| Read Committed     | Dirty reads/writes        | Locks or MVCC
-| Snapshot Isolation | Read skew, many anomalies | MVCC + version visibility
-| Serializable       | All anomalies             | 2PL ( Strict write and read locking) / SSI (MVCC + dependency graph)
+Final state:
 
----
+```text
+Alice = Off
+Bob   = Off
+```
 
-#### Real System Examples
+Business rule violated:
+> At least one doctor must remain on call.
 
-##### PostgreSQL
-
-MVCC + Serializable Snapshot Isolation.
-
----
-
-##### MySQL InnoDB
-
-MVCC + locking.
+**Memory Trick:**
+> **Business rule broken without touching the same row.**
 
 ---
 
-##### Distributed Systems
+# Isolation Levels vs Concurrency Anomalies
 
-Often avoid distributed transactions when possible.
+| Isolation Level | Dirty Read | Non-repeatable Read | Read Skew | Phantom Read | Lost Update | Dirty Write | Write Skew |
+|-----------------|:----------:|:-------------------:|:---------:|:------------:|:-----------:|:-----------:|:----------:|
+| **Read Uncommitted** | ❌ | ❌ | ❌ | ❌ | ❌ | ✅* | ❌ |
+| **Read Committed** | ✅ | ❌ | ❌ | ❌ | ⚠️ DB-dependent | ✅ | ❌ |
+| **Repeatable Read / Snapshot Isolation** | ✅ | ✅ | ✅ | ⚠️ DB-dependent | ✅** | ✅ | ❌ |
+| **Serializable** | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
-Use events instead.
+## Legend
 
+- ✅ = Prevented
+- ❌ = Allowed
+- ⚠️ = Depends on the database implementation
 
-#### One-Line Summary
+### Notes
 
-> Transactions provide correctness under failures and concurrency through ACID guarantees, isolation levels, MVCC, and serializability, trading stronger guarantees against performance and complexity.
+- `*` Dirty Writes are prevented by virtually all modern relational databases, even under Read Uncommitted.
+- `**` Lost Updates are prevented in Snapshot Isolation implementations that detect write-write conflicts (e.g., PostgreSQL).
+
+---
+
+# One-Line Memory Tricks
+
+| Anomaly | Think... | Problem |
+|----------|----------|----------|
+| 🟤 Dirty Read | Read uncommitted data | Bad Read |
+| 🔵 Non-repeatable Read | Same row changed | Bad Read |
+| 🟣 Read Skew | Mixed snapshot | Bad Read |
+| 👻 Phantom Read | New matching rows appeared | Bad Query |
+| 🟠 Lost Update | My update disappeared | Bad Write |
+| 🔴 Dirty Write | Overwrote uncommitted work | Bad Write |
+| 🟢 Write Skew | Business rule violated | Bad Business Logic |
+
+---
+
+# Mnemonic
+
+```text
+Read Uncommitted
+    Trust nobody.
+
+Read Committed
+    Only committed data.
+
+Repeatable Read
+    Same snapshot.
+
+Serializable
+    Same as executing transactions one by one.
+```
