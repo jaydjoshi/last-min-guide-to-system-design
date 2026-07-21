@@ -4073,7 +4073,7 @@ Streaming server -> CDN
 
 #### Medium
 - Proximity Service
-  ![Image](designs/categories/06-location-and-geospatial-systems/medium/proximity-service/ProxityService.png)
+  ![Image](designs/categories/06-location-and-geospatial-systems/medium/proximity-service/ProximityService.png)
 Geohash ( Redis GEO = Geohash + sorted sets) / Quadtree  ( in memory)
 
 #### Hard
