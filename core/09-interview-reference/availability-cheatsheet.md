@@ -11,4 +11,4 @@ Availability is commonly measured using "nines".
 | 99.99% | 52.6 minutes |
 | 99.999% | 5.26 minutes |
 
-Total secods in a day = 24 * 2600 = 86400 ~= 100,000
+Total seconds in a day = 24 * 2600 = 86400 ~= 100,000

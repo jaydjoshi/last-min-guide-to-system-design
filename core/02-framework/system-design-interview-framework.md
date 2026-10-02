@@ -14,6 +14,12 @@ Define Functional Requirements
 Define Non-Functional Requirements
 - List the non-functional requirements.
 - Define the expected SLAs.
+- Define
+  - Availability ( 99.9 or 99.99 SLA) OR Consistency
+  - Scalability
+  - Reliability
+  - Maintainability
+  - Low Latency OR High Throughput
 
 Do Back-of-the-Envelope Calculations
 - Estimate storage requirements.

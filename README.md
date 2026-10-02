@@ -3867,7 +3867,7 @@ Use stronger transaction models.
 
 #### Easy
 - Scale From Zero To Millions Of Users
-  ![Image](./images/Zero to millions scaling.png)
+  ![Image](designs/categories/01-foundations/medium/zero-to-million-scaling/Zero to millions scaling.png)
 - Back-of-the-envelope Estimation
   ##### Common Power-of-Two Conversions
 | Unit | Value | 
